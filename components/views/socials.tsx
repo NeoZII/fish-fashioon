@@ -5,9 +5,9 @@ import { ArrowUpRight } from 'lucide-react'
 import { SOCIALS } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
 
-export function Network({ onBack }: { onBack: () => void }) {
+export function Socials({ onBack }: { onBack: () => void }) {
   return (
-    <ViewShell index="04" title="NETWORK" subtitle="THE SOCIALS" accent="secondary" onBack={onBack}>
+    <ViewShell index="05" title="SOCIALS" subtitle="THE NETWORK" accent="secondary" onBack={onBack}>
       <div className="mb-10 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
         {'Find us everywhere the signal reaches. Tap in — the network never sleeps.'}
       </div>

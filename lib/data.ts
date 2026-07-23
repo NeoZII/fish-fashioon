@@ -1,4 +1,4 @@
-export type ViewId = 'menu' | 'drops' | 'archive' | 'manifesto' | 'network'
+export type ViewId = 'menu' | 'drops' | 'archive' | 'sellers' | 'manifesto' | 'socials'
 
 export type MenuItem = {
   id: Exclude<ViewId, 'menu'>
@@ -17,7 +17,7 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'LATEST DROPS',
     index: '01',
     sub: 'THE FEED',
-    fontSize: 72,
+    fontSize: 70,
     skewX: -7,
     skewY: 6,
     offsetX: 0,
@@ -27,114 +27,97 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'THE ARCHIVE',
     index: '02',
     sub: 'THE GALLERY',
-    fontSize: 78,
+    fontSize: 74,
     skewX: -11,
     skewY: -8,
     offsetX: 34,
   },
   {
+    id: 'sellers',
+    label: 'SELLERS',
+    index: '03',
+    sub: 'THE PLUGS',
+    fontSize: 72,
+    skewX: -5,
+    skewY: 5,
+    offsetX: 12,
+  },
+  {
     id: 'manifesto',
     label: 'MANIFESTO',
-    index: '03',
+    index: '04',
     sub: 'WHO WE ARE',
-    fontSize: 70,
+    fontSize: 68,
     skewX: -4,
     skewY: 7,
-    offsetX: 14,
+    offsetX: 20,
   },
   {
-    id: 'network',
-    label: 'NETWORK',
-    index: '04',
-    sub: 'THE SOCIALS',
-    fontSize: 74,
+    id: 'socials',
+    label: 'SOCIALS',
+    index: '05',
+    sub: 'THE NETWORK',
+    fontSize: 72,
     skewX: -9,
     skewY: -5,
-    offsetX: 24,
+    offsetX: 28,
   },
 ]
 
-export type Drop = {
+/**
+ * The shape of a single row coming out of the Google Sheet / Apps Script feed.
+ * Sheet columns (in order): A id, B title, C link, D image, E category,
+ * F brand, G price, H seller.
+ */
+export type Product = {
   id: string
   title: string
-  handle: string
-  views: string
-  likes: string
-  tag: string
+  link: string
   image: string
+  category: string
+  brand: string
+  price: string
+  seller: string
 }
 
-export const DROPS: Drop[] = [
-  {
-    id: 'd1',
-    title: 'MIDNIGHT RITUAL',
-    handle: '@nox.persona',
-    views: '2.4M',
-    likes: '312K',
-    tag: 'DROP',
-    image: '/drops/drop-01.png',
-  },
-  {
-    id: 'd2',
-    title: 'BLUE HOUR',
-    handle: '@nox.persona',
-    views: '1.1M',
-    likes: '188K',
-    tag: 'BTS',
-    image: '/drops/drop-02.png',
-  },
-  {
-    id: 'd3',
-    title: 'CHROME & LEATHER',
-    handle: '@nox.persona',
-    views: '904K',
-    likes: '96K',
-    tag: 'DROP',
-    image: '/drops/drop-03.png',
-  },
-  {
-    id: 'd4',
-    title: 'CONCRETE SKY',
-    handle: '@nox.persona',
-    views: '3.7M',
-    likes: '441K',
-    tag: 'FILM',
-    image: '/drops/drop-04.png',
-  },
-  {
-    id: 'd5',
-    title: 'FRACTURE',
-    handle: '@nox.persona',
-    views: '812K',
-    likes: '77K',
-    tag: 'DROP',
-    image: '/archive/arc-01.png',
-  },
-  {
-    id: 'd6',
-    title: 'STATIC SMOKE',
-    handle: '@nox.persona',
-    views: '1.9M',
-    likes: '260K',
-    tag: 'LIVE',
-    image: '/archive/arc-02.png',
-  },
-]
+export const CATEGORIES = [
+  'ALL',
+  'JEANS',
+  'SWEATPANTS',
+  'HOODIES',
+  'SWEATS',
+  'SHIRTS',
+  'T-SHIRTS',
+  'OUTERWEAR',
+  'FOOTWEAR',
+  'HEADWEAR',
+  'ACCESSORIES',
+] as const
 
-export type ArchiveItem = {
-  id: string
-  title: string
-  year: string
-  image: string
+/** Derive a filter list of unique sellers, always led by "ALL". */
+export function sellerFilters(items: Product[]): string[] {
+  const unique = Array.from(new Set(items.map((i) => i.seller).filter(Boolean)))
+  return ['ALL', ...unique]
 }
 
-export const ARCHIVE: ArchiveItem[] = [
-  { id: 'a1', title: 'FRACTURED MARBLE', year: '2024', image: '/archive/arc-01.png' },
-  { id: 'a2', title: 'ELECTRIC SMOKE', year: '2024', image: '/archive/arc-02.png' },
-  { id: 'a3', title: 'SPLIT PORTRAIT', year: '2023', image: '/archive/arc-03.png' },
-  { id: 'a4', title: 'THE HOODED ONE', year: '2023', image: '/drops/drop-01.png' },
-  { id: 'a5', title: 'NEON SILHOUETTE', year: '2022', image: '/drops/drop-02.png' },
-  { id: 'a6', title: 'CONCRETE ASCENT', year: '2022', image: '/drops/drop-04.png' },
+/**
+ * Fallback catalogue used while the live sheet is unreachable (e.g. in preview
+ * before the Apps Script endpoint is wired up). Uses the generated gothic
+ * imagery so the grids never render empty.
+ */
+export const FALLBACK_ITEMS: Product[] = [
+  { id: '1', title: 'MIDNIGHT RITUAL HOODIE', link: '#', image: '/drops/drop-01.png', category: 'HOODIES', brand: 'NOXWEAR', price: '$180', seller: 'PainterMade' },
+  { id: '2', title: 'BLUE HOUR TRACK PANT', link: '#', image: '/drops/drop-02.png', category: 'SWEATPANTS', brand: 'RICHILL', price: '$140', seller: 'Richill' },
+  { id: '3', title: 'CHROME & LEATHER JACKET', link: '#', image: '/drops/drop-03.png', category: 'OUTERWEAR', brand: 'VOID CO.', price: '$420', seller: 'VoidCo' },
+  { id: '4', title: 'CONCRETE SKY DENIM', link: '#', image: '/drops/drop-04.png', category: 'JEANS', brand: 'NOXWEAR', price: '$210', seller: 'PainterMade' },
+  { id: '5', title: 'FRACTURE TEE', link: '#', image: '/archive/arc-01.png', category: 'T-SHIRTS', brand: 'RICHILL', price: '$65', seller: 'Richill' },
+  { id: '6', title: 'STATIC SMOKE CREW', link: '#', image: '/archive/arc-02.png', category: 'SWEATS', brand: 'VOID CO.', price: '$120', seller: 'VoidCo' },
+  { id: '7', title: 'SPLIT PORTRAIT CAP', link: '#', image: '/archive/arc-03.png', category: 'HEADWEAR', brand: 'NOXWEAR', price: '$55', seller: 'PainterMade' },
+  { id: '8', title: 'THE HOODED ONE SHIRT', link: '#', image: '/drops/drop-01.png', category: 'SHIRTS', brand: 'RICHILL', price: '$95', seller: 'Richill' },
+  { id: '9', title: 'NEON SILHOUETTE BOOT', link: '#', image: '/drops/drop-02.png', category: 'FOOTWEAR', brand: 'VOID CO.', price: '$320', seller: 'VoidCo' },
+  { id: '10', title: 'ASCENT CHAIN', link: '#', image: '/drops/drop-04.png', category: 'ACCESSORIES', brand: 'NOXWEAR', price: '$90', seller: 'PainterMade' },
+  { id: '11', title: 'RITUAL SWEATPANT', link: '#', image: '/archive/arc-01.png', category: 'SWEATPANTS', brand: 'RICHILL', price: '$135', seller: 'Richill' },
+  { id: '12', title: 'VOID SHELL COAT', link: '#', image: '/drops/drop-03.png', category: 'OUTERWEAR', brand: 'VOID CO.', price: '$460', seller: 'VoidCo' },
 ]
 
 export type Social = {

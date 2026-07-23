@@ -10,6 +10,7 @@ export function ViewShell({
   subtitle,
   accent = 'primary',
   onBack,
+  toolbar,
   children,
 }: {
   index: string
@@ -17,6 +18,7 @@ export function ViewShell({
   subtitle: string
   accent?: 'primary' | 'secondary'
   onBack: () => void
+  toolbar?: ReactNode
   children: ReactNode
 }) {
   const accentClass = accent === 'primary' ? 'text-primary' : 'text-secondary'
@@ -26,22 +28,25 @@ export function ViewShell({
     <div className="relative min-h-dvh w-full overflow-hidden">
       <div className="p3-stripes pointer-events-none absolute inset-0 opacity-40" />
 
-      {/* header */}
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-border bg-background/70 px-4 py-4 backdrop-blur-md md:px-10">
-        <button
-          type="button"
-          onClick={onBack}
-          className="group flex items-center gap-2 font-mono text-xs tracking-[0.25em] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
-          MENU
-        </button>
-        <div className="flex items-center gap-3">
-          <span className={`font-mono text-xs tracking-[0.25em] ${accentClass}`}>{subtitle}</span>
-          <span className={`h-4 w-[2px] ${barClass}`} />
-          <span className="font-mono text-xs tabular-nums text-muted-foreground">{index}</span>
-        </div>
-      </header>
+      {/* sticky header + optional toolbar */}
+      <div className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md">
+        <header className="flex items-center justify-between gap-4 px-4 py-4 md:px-10">
+          <button
+            type="button"
+            onClick={onBack}
+            className="group flex items-center gap-2 font-mono text-xs tracking-[0.25em] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
+            MENU
+          </button>
+          <div className="flex items-center gap-3">
+            <span className={`font-mono text-xs tracking-[0.25em] ${accentClass}`}>{subtitle}</span>
+            <span className={`h-4 w-[2px] ${barClass}`} />
+            <span className="font-mono text-xs tabular-nums text-muted-foreground">{index}</span>
+          </div>
+        </header>
+        {toolbar ? <div className="border-t border-border">{toolbar}</div> : null}
+      </div>
 
       {/* big tilted title */}
       <div className="relative overflow-hidden px-4 pb-2 pt-10 md:px-10 md:pt-16">

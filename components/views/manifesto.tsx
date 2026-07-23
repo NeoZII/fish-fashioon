@@ -17,7 +17,7 @@ const CREED = [
 
 export function Manifesto({ onBack }: { onBack: () => void }) {
   return (
-    <ViewShell index="03" title="MANIFESTO" subtitle="WHO WE ARE" accent="primary" onBack={onBack}>
+    <ViewShell index="04" title="MANIFESTO" subtitle="WHO WE ARE" accent="primary" onBack={onBack}>
       <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr]">
         <div>
           <div className="mb-10">

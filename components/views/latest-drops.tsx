@@ -33,7 +33,7 @@ export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () =>
           {String(latest.length).padStart(2, '0')} NEW
         </span>
       </div>
-      <ProductGrid items={latest} accent="primary" />
+      <ProductGrid items={latest} accent="primary" shuffleItems={false} />
     </ViewShell>
   )
 }

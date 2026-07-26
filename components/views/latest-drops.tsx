@@ -1,12 +1,17 @@
 'use client'
 
-import { useMemo } from 'react'
-import type { Product } from '@/lib/data'
+import { useMemo, useState } from 'react'
+import { CATEGORIES, brandFilters, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
+import { FilterBar } from '@/components/filter-bar'
 import { ProductGrid } from '@/components/product-grid'
 
 export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () => void }) {
-  const latest = useMemo(() => {
+  const [category, setCategory] = useState<string>('ALL')
+  const [brand, setBrand] = useState<string>('ALL')
+
+  // First narrow to the last-7-days feed (date-sorted, newest first).
+  const recent = useMemo(() => {
     const now = Date.now()
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000
     // Anything on or before this cutoff is treated as a "placeholder" date and ignored.
@@ -23,8 +28,43 @@ export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () =>
       .map(({ item }) => item)
   }, [items])
 
+  // Brand options derive from the recent feed so the list stays relevant.
+  const brands = useMemo(() => brandFilters(recent), [recent])
+
+  const latest = useMemo(() => {
+    return recent.filter(
+      (i) =>
+        (category === 'ALL' || i.category === category) &&
+        (brand === 'ALL' || i.brand === brand),
+    )
+  }, [recent, category, brand])
+
   return (
-    <ViewShell index="01" title="LATEST DROPS" subtitle="THE FEED" accent="primary" onBack={onBack}>
+    <ViewShell
+      index="01"
+      title="LATEST DROPS"
+      subtitle="THE FEED"
+      accent="primary"
+      onBack={onBack}
+      toolbar={
+        <div className="flex flex-col divide-y divide-border">
+          <FilterBar
+            label="CATEGORY"
+            options={[...CATEGORIES]}
+            active={category}
+            onChange={setCategory}
+            accent="primary"
+          />
+          <FilterBar
+            label="BRAND"
+            options={brands}
+            active={brand}
+            onChange={setBrand}
+            accent="primary"
+          />
+        </div>
+      }
+    >
       <div className="mb-8 flex items-end justify-between gap-4">
         <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
           {'Fresh from the void. Everything dropped in the last seven days — newest signals first.'}

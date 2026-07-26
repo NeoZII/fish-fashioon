@@ -1,20 +1,24 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { sellerFilters, type Product } from '@/lib/data'
+import { sellerFilters, CATEGORIES, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
 import { FilterBar } from '@/components/filter-bar'
 import { ProductGrid } from '@/components/product-grid'
 
 export function Sellers({ items, onBack }: { items: Product[]; onBack: () => void }) {
   const [seller, setSeller] = useState<string>('ALL')
+  const [category, setCategory] = useState<string>('ALL')
 
   const options = useMemo(() => sellerFilters(items), [items])
 
   const filtered = useMemo(() => {
-    if (seller === 'ALL') return items
-    return items.filter((i) => i.seller === seller)
-  }, [items, seller])
+    return items.filter(
+      (i) =>
+        (seller === 'ALL' || i.seller === seller) &&
+        (category === 'ALL' || i.category === category),
+    )
+  }, [items, seller, category])
 
   return (
     <ViewShell
@@ -24,7 +28,16 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
       accent="primary"
       onBack={onBack}
       toolbar={
-        <FilterBar options={options} active={seller} onChange={setSeller} accent="primary" />
+        <div className="flex flex-col divide-y divide-border">
+          <FilterBar label="SELLER" options={options} active={seller} onChange={setSeller} accent="primary" />
+          <FilterBar
+            label="CATEGORY"
+            options={[...CATEGORIES]}
+            active={category}
+            onChange={setCategory}
+            accent="primary"
+          />
+        </div>
       }
     >
       <div className="mb-8 flex items-end justify-between gap-4">

@@ -85,19 +85,39 @@ export const CATEGORIES = [
   'ALL',
   'JEANS',
   'SWEATPANTS',
+  'SHORTS',
   'HOODIES',
+  'ZIP-UPS',
+  'JACKETS',
   'SWEATS',
-  'SHIRTS',
   'T-SHIRTS',
-  'OUTERWEAR',
-  'FOOTWEAR',
-  'HEADWEAR',
+  'LONGSLEEVES',
+  'TANKTOPS',
+  'SHIRTS',
+  'JERSEYS',
+  'SHOES',
+  'BOOTS',
+  'SLIDES',
+  'MERCH',
   'ACCESSORIES',
+  'CAPS',
+  'BAGS',
+  'BACKPACKS',
+  'JEWELLERY',
+  'FIGURINES',
 ] as const
 
 /** Derive a filter list of unique sellers, always led by "ALL". */
 export function sellerFilters(items: Product[]): string[] {
   const unique = Array.from(new Set(items.map((i) => i.seller).filter(Boolean)))
+  return ['ALL', ...unique]
+}
+
+/** Derive a filter list of unique brands (column F), always led by "ALL". */
+export function brandFilters(items: Product[]): string[] {
+  const unique = Array.from(new Set(items.map((i) => i.brand).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b),
+  )
   return ['ALL', ...unique]
 }
 

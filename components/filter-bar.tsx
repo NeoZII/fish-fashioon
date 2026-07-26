@@ -5,11 +5,13 @@ export function FilterBar({
   active,
   onChange,
   accent = 'primary',
+  label,
 }: {
   options: string[]
   active: string
   onChange: (value: string) => void
   accent?: 'primary' | 'secondary'
+  label?: string
 }) {
   const activeClass =
     accent === 'primary'
@@ -17,7 +19,12 @@ export function FilterBar({
       : 'bg-secondary text-secondary-foreground border-secondary'
 
   return (
-    <div className="flex gap-2 overflow-x-auto px-4 py-3 md:px-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex items-center gap-2 overflow-x-auto px-4 py-2 md:px-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {label && (
+        <span className="shrink-0 pr-1 font-mono text-[10px] font-bold tracking-[0.25em] text-muted-foreground">
+          {label}
+        </span>
+      )}
       {options.map((option) => {
         const isActive = option === active
         return (

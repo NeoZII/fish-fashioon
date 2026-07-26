@@ -10,15 +10,18 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
   const [seller, setSeller] = useState<string>('ALL')
   const [category, setCategory] = useState<string>('ALL')
 
-  const options = useMemo(() => sellerFilters(items), [items])
+  // Sellers tab only ever deals with rows that have a non-empty Seller (col H).
+  const withSeller = useMemo(() => items.filter((i) => i.seller.trim() !== ''), [items])
+
+  const options = useMemo(() => sellerFilters(withSeller), [withSeller])
 
   const filtered = useMemo(() => {
-    return items.filter(
+    return withSeller.filter(
       (i) =>
         (seller === 'ALL' || i.seller === seller) &&
         (category === 'ALL' || i.category === category),
     )
-  }, [items, seller, category])
+  }, [withSeller, seller, category])
 
   return (
     <ViewShell

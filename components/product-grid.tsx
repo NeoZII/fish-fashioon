@@ -148,11 +148,11 @@ function ProductCard({
               href={product.link || '#'}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex skew-x-[-8deg] items-center gap-1 bg-foreground px-3 py-1.5 font-mono text-[10px] font-bold tracking-[0.2em] text-background transition-colors hover:bg-primary hover:text-primary-foreground"
+              className="flex min-h-[40px] skew-x-[-8deg] items-center gap-1 bg-foreground px-4 py-2 font-mono text-[11px] font-bold tracking-[0.2em] text-background transition-colors hover:bg-primary hover:text-primary-foreground"
               aria-label={`Buy ${product.title}`}
             >
               BUY
-              <ArrowUpRight className="size-3" />
+              <ArrowUpRight className="size-3.5" />
             </a>
           </div>
         </div>

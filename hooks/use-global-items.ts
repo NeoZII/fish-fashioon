@@ -33,7 +33,9 @@ function normalize(raw: unknown): Product[] {
 }
 
 export function useGlobalItems() {
-  const [globalItems, setGlobalItems] = useState<Product[]>(FALLBACK_ITEMS)
+  // Start empty so nothing renders until real data (or a fallback) has fully
+  // arrived — this prevents the flash of placeholder cards on first paint.
+  const [globalItems, setGlobalItems] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -44,9 +46,10 @@ export function useGlobalItems() {
         const res = await fetch(SHEET_ENDPOINT, { cache: 'no-store' })
         if (!res.ok) throw new Error(`Sheet responded ${res.status}`)
         const data = normalize(await res.json())
-        if (active && data.length) setGlobalItems(data)
+        if (active) setGlobalItems(data.length ? data : FALLBACK_ITEMS)
       } catch (err) {
         console.log('[v0] Sheet fetch failed, using fallback catalogue:', err)
+        if (active) setGlobalItems(FALLBACK_ITEMS)
       } finally {
         if (active) setLoading(false)
       }

@@ -47,7 +47,7 @@ export function P3Menu({ onNavigate }: { onNavigate: (id: MenuItem['id']) => voi
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="pointer-events-none absolute left-4 top-6 z-0 flex origin-top-left flex-col font-display italic leading-[0.82] text-foreground/5 md:left-8"
       >
-        <span className="text-[22vw] md:text-[13vw]">NOX</span>
+        <span className="text-[16vw] md:text-[9vw]">FishFashion</span>
       </motion.div>
 
       {/* menu list */}

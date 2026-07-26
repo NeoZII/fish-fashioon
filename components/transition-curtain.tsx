@@ -40,8 +40,8 @@ export function TransitionCurtain({ show }: { show: boolean }) {
             animate={{ opacity: [0, 1, 1, 0] }}
             transition={{ duration: 0.85, times: [0, 0.42, 0.58, 1] }}
           >
-            <span className="font-display text-6xl italic tracking-widest text-background md:text-8xl">
-              NOX
+            <span className="font-display text-4xl italic tracking-widest text-background md:text-7xl">
+              FishFashion
             </span>
           </motion.div>
         </div>

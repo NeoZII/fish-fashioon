@@ -1,17 +1,33 @@
 'use client'
 
+import { useMemo } from 'react'
 import type { Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
 import { ProductGrid } from '@/components/product-grid'
 
 export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () => void }) {
-  const latest = items.slice(0, 20)
+  const latest = useMemo(() => {
+    const now = Date.now()
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000
+    // Anything on or before this cutoff is treated as a "placeholder" date and ignored.
+    const floor = new Date('2020-01-01T00:00:00').getTime()
+
+    return items
+      .map((item) => ({ item, ts: new Date(item.date_added).getTime() }))
+      .filter(({ ts }) => {
+        if (Number.isNaN(ts)) return false // unparseable dates
+        if (ts <= floor) return false // ignore 2020-01-01 or earlier
+        return now - ts <= sevenDaysMs // only the last 7 days
+      })
+      .sort((a, b) => b.ts - a.ts) // newest first
+      .map(({ item }) => item)
+  }, [items])
 
   return (
     <ViewShell index="01" title="LATEST DROPS" subtitle="THE FEED" accent="primary" onBack={onBack}>
       <div className="mb-8 flex items-end justify-between gap-4">
         <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-          {'Fresh from the void. The twenty newest additions to the feed — updated when the moon says so.'}
+          {'Fresh from the void. Everything dropped in the last seven days — newest signals first.'}
         </p>
         <span className="shrink-0 font-mono text-xs tabular-nums text-primary">
           {String(latest.length).padStart(2, '0')} NEW

@@ -54,7 +54,7 @@ export function Socials({ onBack }: { onBack: () => void }) {
         transition={{ delay: 0.7 }}
         className="mt-12 font-mono text-xs tracking-[0.3em] text-muted-foreground"
       >
-        NOX // PERSONA — © 2026 ALL SIGNALS RESERVED
+        FishFashion — © 2026 ALL SIGNALS RESERVED
       </motion.div>
     </ViewShell>
   )

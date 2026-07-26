@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react'
 import { FALLBACK_ITEMS, type Product } from '@/lib/data'
 
 /**
- * Placeholder Google Apps Script deployment URL.
- * Replace REPLACE_WITH_YOUR_DEPLOYMENT_ID with your `/exec` deployment id.
- * The script should return a JSON array of rows matching the sheet columns:
- * A id, B title, C link, D image, E category, F brand, G price, H seller.
+ * Live Google Apps Script deployment feeding the catalogue.
+ * The script returns a JSON array of rows matching the sheet columns:
+ * A id, B title, C link, D image, E category, F brand, G price, H seller,
+ * I date_added.
  */
 const SHEET_ENDPOINT =
-  'https://script.google.com/macros/s/REPLACE_WITH_YOUR_DEPLOYMENT_ID/exec'
+  'https://script.google.com/macros/s/AKfycbwbaFyh3AHeysqlwzrk2tDMbBbKjX7onnbc0uLoN1dItZhjqiehYgMuxLotDzjQQwBo/exec'
 
 function normalize(raw: unknown): Product[] {
   if (!Array.isArray(raw)) return []
@@ -26,6 +26,7 @@ function normalize(raw: unknown): Product[] {
         brand: String(r.brand ?? ''),
         price: String(r.price ?? ''),
         seller: String(r.seller ?? ''),
+        date_added: String(r.date_added ?? ''),
       }
     })
     .filter((p) => p.title)
@@ -39,12 +40,6 @@ export function useGlobalItems() {
     let active = true
 
     async function load() {
-      // Skip the network call while the endpoint is still a placeholder so the
-      // preview immediately renders the fallback catalogue.
-      if (SHEET_ENDPOINT.includes('REPLACE_WITH_YOUR_DEPLOYMENT_ID')) {
-        if (active) setLoading(false)
-        return
-      }
       try {
         const res = await fetch(SHEET_ENDPOINT, { cache: 'no-store' })
         if (!res.ok) throw new Error(`Sheet responded ${res.status}`)

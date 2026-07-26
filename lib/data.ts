@@ -67,7 +67,7 @@ export const MENU_ITEMS: MenuItem[] = [
 /**
  * The shape of a single row coming out of the Google Sheet / Apps Script feed.
  * Sheet columns (in order): A id, B title, C link, D image, E category,
- * F brand, G price, H seller.
+ * F brand, G price, H seller, I date_added.
  */
 export type Product = {
   id: string
@@ -78,6 +78,7 @@ export type Product = {
   brand: string
   price: string
   seller: string
+  date_added: string
 }
 
 export const CATEGORIES = [
@@ -85,23 +86,12 @@ export const CATEGORIES = [
   'JEANS',
   'SWEATPANTS',
   'HOODIES',
-  'ZIP-UPS',
-  'JACKETS',
   'SWEATS',
   'SHIRTS',
-  'LONGSLEEVES',
-  'TANKTOPS',
-  'SHORTS',
   'T-SHIRTS',
-  'SHOES',
-  'BOOTS',
-  'SLIDES',
-  'MERCH',
-  'CAPS',
-  'BAGS',
-  'BACKPACKS',
-  'JEWELLERY',
-  'FIGURINES',
+  'OUTERWEAR',
+  'FOOTWEAR',
+  'HEADWEAR',
   'ACCESSORIES',
 ] as const
 
@@ -117,18 +107,18 @@ export function sellerFilters(items: Product[]): string[] {
  * imagery so the grids never render empty.
  */
 export const FALLBACK_ITEMS: Product[] = [
-  { id: '1', title: 'MIDNIGHT RITUAL HOODIE', link: '#', image: '/drops/drop-01.png', category: 'HOODIES', brand: 'NOXWEAR', price: '$180', seller: 'PainterMade' },
-  { id: '2', title: 'BLUE HOUR TRACK PANT', link: '#', image: '/drops/drop-02.png', category: 'SWEATPANTS', brand: 'RICHILL', price: '$140', seller: 'Richill' },
-  { id: '3', title: 'CHROME & LEATHER JACKET', link: '#', image: '/drops/drop-03.png', category: 'OUTERWEAR', brand: 'VOID CO.', price: '$420', seller: 'VoidCo' },
-  { id: '4', title: 'CONCRETE SKY DENIM', link: '#', image: '/drops/drop-04.png', category: 'JEANS', brand: 'NOXWEAR', price: '$210', seller: 'PainterMade' },
-  { id: '5', title: 'FRACTURE TEE', link: '#', image: '/archive/arc-01.png', category: 'T-SHIRTS', brand: 'RICHILL', price: '$65', seller: 'Richill' },
-  { id: '6', title: 'STATIC SMOKE CREW', link: '#', image: '/archive/arc-02.png', category: 'SWEATS', brand: 'VOID CO.', price: '$120', seller: 'VoidCo' },
-  { id: '7', title: 'SPLIT PORTRAIT CAP', link: '#', image: '/archive/arc-03.png', category: 'HEADWEAR', brand: 'NOXWEAR', price: '$55', seller: 'PainterMade' },
-  { id: '8', title: 'THE HOODED ONE SHIRT', link: '#', image: '/drops/drop-01.png', category: 'SHIRTS', brand: 'RICHILL', price: '$95', seller: 'Richill' },
-  { id: '9', title: 'NEON SILHOUETTE BOOT', link: '#', image: '/drops/drop-02.png', category: 'FOOTWEAR', brand: 'VOID CO.', price: '$320', seller: 'VoidCo' },
-  { id: '10', title: 'ASCENT CHAIN', link: '#', image: '/drops/drop-04.png', category: 'ACCESSORIES', brand: 'NOXWEAR', price: '$90', seller: 'PainterMade' },
-  { id: '11', title: 'RITUAL SWEATPANT', link: '#', image: '/archive/arc-01.png', category: 'SWEATPANTS', brand: 'RICHILL', price: '$135', seller: 'Richill' },
-  { id: '12', title: 'VOID SHELL COAT', link: '#', image: '/drops/drop-03.png', category: 'OUTERWEAR', brand: 'VOID CO.', price: '$460', seller: 'VoidCo' },
+  { id: '1', title: 'MIDNIGHT RITUAL HOODIE', link: '#', image: '/drops/drop-01.png', category: 'HOODIES', brand: 'FishFashion', price: '$180', seller: 'PainterMade', date_added: '2026-07-25' },
+  { id: '2', title: 'BLUE HOUR TRACK PANT', link: '#', image: '/drops/drop-02.png', category: 'SWEATPANTS', brand: 'RICHILL', price: '$140', seller: 'Richill', date_added: '2026-07-24' },
+  { id: '3', title: 'CHROME & LEATHER JACKET', link: '#', image: '/drops/drop-03.png', category: 'OUTERWEAR', brand: 'VOID CO.', price: '$420', seller: 'VoidCo', date_added: '2026-07-22' },
+  { id: '4', title: 'CONCRETE SKY DENIM', link: '#', image: '/drops/drop-04.png', category: 'JEANS', brand: 'FishFashion', price: '$210', seller: 'PainterMade', date_added: '2026-07-20' },
+  { id: '5', title: 'FRACTURE TEE', link: '#', image: '/archive/arc-01.png', category: 'T-SHIRTS', brand: 'RICHILL', price: '$65', seller: 'Richill', date_added: '2026-06-30' },
+  { id: '6', title: 'STATIC SMOKE CREW', link: '#', image: '/archive/arc-02.png', category: 'SWEATS', brand: 'VOID CO.', price: '$120', seller: 'VoidCo', date_added: '2026-06-12' },
+  { id: '7', title: 'SPLIT PORTRAIT CAP', link: '#', image: '/archive/arc-03.png', category: 'HEADWEAR', brand: 'FishFashion', price: '$55', seller: 'PainterMade', date_added: '2026-05-01' },
+  { id: '8', title: 'THE HOODED ONE SHIRT', link: '#', image: '/drops/drop-01.png', category: 'SHIRTS', brand: 'RICHILL', price: '$95', seller: 'Richill', date_added: '2026-07-19' },
+  { id: '9', title: 'NEON SILHOUETTE BOOT', link: '#', image: '/drops/drop-02.png', category: 'FOOTWEAR', brand: 'VOID CO.', price: '$320', seller: 'VoidCo', date_added: '2026-04-18' },
+  { id: '10', title: 'ASCENT CHAIN', link: '#', image: '/drops/drop-04.png', category: 'ACCESSORIES', brand: 'FishFashion', price: '$90', seller: 'PainterMade', date_added: '2020-01-01' },
+  { id: '11', title: 'RITUAL SWEATPANT', link: '#', image: '/archive/arc-01.png', category: 'SWEATPANTS', brand: 'RICHILL', price: '$135', seller: 'Richill', date_added: '2026-03-09' },
+  { id: '12', title: 'VOID SHELL COAT', link: '#', image: '/drops/drop-03.png', category: 'OUTERWEAR', brand: 'VOID CO.', price: '$460', seller: 'VoidCo', date_added: '2026-07-26' },
 ]
 
 export type Social = {
@@ -140,8 +130,8 @@ export type Social = {
 }
 
 export const SOCIALS: Social[] = [
-  { id: 's1', label: 'TIKTOK', handle: '@nox.persona', meta: '2.1M FOLLOWERS', href: '#' },
-  { id: 's2', label: 'INSTAGRAM', handle: '@nox.persona', meta: '840K FOLLOWERS', href: '#' },
-  { id: 's3', label: 'YOUTUBE', handle: '/noxpersona', meta: '512K SUBS', href: '#' },
-  { id: 's4', label: 'X / TWITTER', handle: '@noxpersona', meta: '204K FOLLOWERS', href: '#' },
+  { id: 's1', label: 'TIKTOK', handle: '@fishfashion', meta: '2.1M FOLLOWERS', href: '#' },
+  { id: 's2', label: 'INSTAGRAM', handle: '@fishfashion', meta: '840K FOLLOWERS', href: '#' },
+  { id: 's3', label: 'YOUTUBE', handle: '/fishfashion', meta: '512K SUBS', href: '#' },
+  { id: 's4', label: 'X / TWITTER', handle: '@fishfashion', meta: '204K FOLLOWERS', href: '#' },
 ]

@@ -7,6 +7,28 @@ import type { Product } from '@/lib/data'
 
 const BATCH_SIZE = 16
 
+/**
+ * Split a raw price string into a primary USD value and an optional
+ * secondary JPY value. Handles single-currency strings ("$180") as well
+ * as combined feeds like "$37.00 , ¥ 240,50" (comma = decimal separator).
+ */
+function parsePrice(raw: string): { usd: string; jpy: string | null } {
+  const usdMatch = raw.match(/\$\s*[\d.,]+/)
+  const jpyMatch = raw.match(/[¥￥]\s*[\d.,]+/)
+
+  const usd = usdMatch ? usdMatch[0].replace(/\s+/g, '') : raw.trim()
+
+  let jpy: string | null = null
+  if (jpyMatch) {
+    let num = jpyMatch[0].replace(/[¥￥\s]/g, '')
+    // "240,50" -> comma is a decimal separator when only 1–2 trailing digits.
+    if (/,\d{1,2}$/.test(num)) num = num.replace(',', '.')
+    jpy = `¥${num}`
+  }
+
+  return { usd, jpy }
+}
+
 /** Fisher–Yates shuffle — returns a new, randomly ordered array. */
 function shuffle<T>(input: T[]): T[] {
   const arr = [...input]
@@ -101,6 +123,7 @@ function ProductCard({
 
   const tagClass = accent === 'primary' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
   const priceClass = accent === 'primary' ? 'text-primary' : 'text-secondary'
+  const price = parsePrice(product.price)
 
   return (
     <motion.div
@@ -140,15 +163,22 @@ function ProductCard({
           <h3 className="font-display text-base italic leading-tight tracking-wide text-foreground text-balance">
             {product.title}
           </h3>
-          <div className="mt-auto flex items-center justify-between pt-3">
-            <span className={`font-mono text-sm font-bold tabular-nums ${priceClass}`}>
-              {product.price}
-            </span>
+          <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+            <div className="flex min-w-0 flex-1 flex-col leading-none">
+              <span className={`truncate font-mono text-sm font-semibold tabular-nums sm:text-base ${priceClass}`}>
+                {price.usd}
+              </span>
+              {price.jpy && (
+                <span className="mt-1 truncate font-mono text-[11px] tabular-nums text-muted-foreground">
+                  {price.jpy}
+                </span>
+              )}
+            </div>
             <a
               href={product.link || '#'}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex min-h-[40px] skew-x-[-8deg] items-center gap-1 bg-foreground px-4 py-2 font-mono text-[11px] font-bold tracking-[0.2em] text-background transition-colors hover:bg-primary hover:text-primary-foreground"
+              className="flex min-h-[40px] shrink-0 skew-x-[-8deg] items-center gap-1 bg-foreground px-4 py-2 font-mono text-[11px] font-bold tracking-[0.2em] text-background transition-colors hover:bg-primary hover:text-primary-foreground"
               aria-label={`Buy ${product.title}`}
             >
               BUY

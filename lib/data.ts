@@ -92,7 +92,7 @@ export type Product = {
 
 export const CATEGORIES = [
   'ALL',
-  'JEANS',
+  'PANTS',
   'SWEATPANTS',
   'SHORTS',
   'HOODIES',
@@ -154,7 +154,7 @@ export const FALLBACK_ITEMS: Product[] = [
   { id: '1', title: 'MIDNIGHT RITUAL HOODIE', link: '#', image: '/drops/drop-01.png', category: 'HOODIES', brand: 'FishFashion', price: '$180', seller: 'PainterMade', date_added: '2026-07-25' },
   { id: '2', title: 'BLUE HOUR TRACK PANT', link: '#', image: '/drops/drop-02.png', category: 'SWEATPANTS', brand: 'RICHILL', price: '$140', seller: 'Richill', date_added: '2026-07-24' },
   { id: '3', title: 'CHROME & LEATHER JACKET', link: '#', image: '/drops/drop-03.png', category: 'OUTERWEAR', brand: 'VOID CO.', price: '$420', seller: 'VoidCo', date_added: '2026-07-22' },
-  { id: '4', title: 'CONCRETE SKY DENIM', link: '#', image: '/drops/drop-04.png', category: 'JEANS', brand: 'FishFashion', price: '$210', seller: 'PainterMade', date_added: '2026-07-20' },
+  { id: '4', title: 'CONCRETE SKY DENIM', link: '#', image: '/drops/drop-04.png', category: 'PANTS', brand: 'FishFashion', price: '$210', seller: 'PainterMade', date_added: '2026-07-20' },
   { id: '5', title: 'FRACTURE TEE', link: '#', image: '/archive/arc-01.png', category: 'T-SHIRTS', brand: 'RICHILL', price: '$65', seller: 'Richill', date_added: '2026-06-30' },
   { id: '6', title: 'STATIC SMOKE CREW', link: '#', image: '/archive/arc-02.png', category: 'SWEATS', brand: 'VOID CO.', price: '$120', seller: 'VoidCo', date_added: '2026-06-12' },
   { id: '7', title: 'SPLIT PORTRAIT CAP', link: '#', image: '/archive/arc-03.png', category: 'HEADWEAR', brand: 'FishFashion', price: '$55', seller: 'PainterMade', date_added: '2026-05-01' },

@@ -48,7 +48,7 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
     >
       <div className="mb-8 flex items-end justify-between gap-4">
         <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-          {'A collected memory. Every artifact catalogued, every frame preserved in the dark.'}
+          {'Every Item Catalogued, 4000+ Items and MORE Daily.'}
         </p>
         <span className="shrink-0 font-mono text-xs tabular-nums text-secondary">
           {String(filtered.length).padStart(2, '0')} ITEMS

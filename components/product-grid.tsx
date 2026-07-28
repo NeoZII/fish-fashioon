@@ -1,11 +1,16 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { ArrowUpRight } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowUpRight, Check, Flag, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Product } from '@/lib/data'
 
 const BATCH_SIZE = 16
+
+const REPORT_ENDPOINT =
+  'https://script.google.com/macros/s/AKfycbx9v3aqzotQmh3zlbD6oVh0xdwcoiDt6Z5qzzM7L1ZLABQSNUhAbWZgJooCnRG8hN5w/exec'
+
+type ReportReason = 'Dead link' | 'Out of stock'
 
 /**
  * Split a raw price string into a primary USD value and an optional
@@ -51,6 +56,14 @@ export function ProductGrid({
 }) {
   const [ordered, setOrdered] = useState<Product[]>([])
   const [visible, setVisible] = useState(BATCH_SIZE)
+  const [reportTarget, setReportTarget] = useState<Product | null>(null)
+  const [showToast, setShowToast] = useState(false)
+
+  const handleReported = () => {
+    setReportTarget(null)
+    setShowToast(true)
+    window.setTimeout(() => setShowToast(false), 2000)
+  }
 
   // Re-order + reset pagination whenever the source list changes
   // (new fetch, category filter, seller switch, or a fresh page load).
@@ -74,9 +87,40 @@ export function ProductGrid({
     <div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
         {shown.map((item, i) => (
-          <ProductCard key={item.id} product={item} index={i % BATCH_SIZE} accent={accent} />
+          <ProductCard
+            key={item.id}
+            product={item}
+            index={i % BATCH_SIZE}
+            accent={accent}
+            onReport={() => setReportTarget(item)}
+          />
         ))}
       </div>
+
+      <ReportModal
+        product={reportTarget}
+        onClose={() => setReportTarget(null)}
+        onReported={handleReported}
+      />
+
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-x-0 bottom-6 z-[60] flex justify-center px-4"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-center gap-2 skew-x-[-6deg] bg-foreground px-5 py-3 font-mono text-xs font-bold tracking-[0.2em] text-background shadow-lg">
+              <Check className="size-4 shrink-0" />
+              THANKS, REPORTED!
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {hasMore && (
         <div className="mt-10 flex flex-col items-center gap-3">
@@ -104,10 +148,12 @@ function ProductCard({
   product,
   index,
   accent,
+  onReport,
 }: {
   product: Product
   index: number
   accent: 'primary' | 'secondary'
+  onReport: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 })
@@ -154,6 +200,15 @@ function ProductCard({
           >
             {product.category}
           </span>
+          <button
+            type="button"
+            onClick={onReport}
+            aria-label={`Report ${product.title}`}
+            title="Report this item"
+            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/40 text-white/70 backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-white"
+          >
+            <Flag className="size-3.5" />
+          </button>
         </div>
 
         <div className="flex flex-1 flex-col gap-1 p-3" style={{ transform: 'translateZ(24px)' }}>
@@ -188,5 +243,124 @@ function ProductCard({
         </div>
       </motion.div>
     </motion.div>
+  )
+}
+
+function ReportModal({
+  product,
+  onClose,
+  onReported,
+}: {
+  product: Product | null
+  onClose: () => void
+  onReported: () => void
+}) {
+  const [reason, setReason] = useState<ReportReason | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  // Reset selection each time a new product is opened.
+  useEffect(() => {
+    if (product) {
+      setReason(null)
+      setSubmitting(false)
+    }
+  }, [product])
+
+  const handleSubmit = async () => {
+    if (!product || !reason || submitting) return
+    setSubmitting(true)
+    try {
+      await fetch(REPORT_ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productName: product.title,
+          reason,
+          productUrl: product.link || '',
+        }),
+      })
+    } catch (err) {
+      console.log('[v0] report submit error:', err)
+    }
+    onReported()
+  }
+
+  const reasons: ReportReason[] = ['Dead link', 'Out of stock']
+
+  return (
+    <AnimatePresence>
+      {product && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[70] flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center"
+          onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Report product"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-md border border-border bg-card p-5"
+          >
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">
+                  REPORT ITEM
+                </span>
+                <h3 className="mt-1 font-display text-lg italic leading-tight tracking-wide text-foreground text-balance">
+                  {product.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {reasons.map((r) => {
+                const active = reason === r
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setReason(r)}
+                    aria-pressed={active}
+                    className={`skew-x-[-6deg] px-3 py-3 font-mono text-[11px] font-bold tracking-[0.15em] transition-colors ${
+                      active
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border bg-transparent text-foreground hover:border-primary'
+                    }`}
+                  >
+                    {r.toUpperCase()}
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!reason || submitting}
+              className="mt-5 w-full skew-x-[-6deg] bg-foreground px-4 py-3 font-mono text-xs font-bold tracking-[0.3em] text-background transition-colors hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {submitting ? 'SENDING…' : 'SUBMIT'}
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }

@@ -45,7 +45,7 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
     >
       <div className="mb-8 flex items-end justify-between gap-4">
         <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-          {'The trusted network. Every plug vetted, every seller verified before they touch the feed.'}
+          {'Every plug in one place, every seller verified before they touch the feed.'}
         </p>
         <span className="shrink-0 font-mono text-xs tabular-nums text-primary">
           {String(filtered.length).padStart(2, '0')} ITEMS

@@ -69,9 +69,16 @@ export function Manifesto({ onBack }: { onBack: () => void }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15 }}
-        className="mb-12 flex min-h-[52px] w-full items-center justify-between gap-3 bg-primary px-6 py-4 font-mono text-sm font-bold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-foreground hover:text-background sm:w-auto"
+        className="mb-12 flex min-h-[52px] w-full items-center justify-between gap-4 bg-primary px-6 py-4 text-primary-foreground transition-colors hover:bg-foreground hover:text-background sm:w-auto"
       >
-        Create your account
+        <span className="flex flex-col gap-1 text-left">
+          <span className="font-mono text-sm font-bold uppercase tracking-[0.2em]">
+            Create your account
+          </span>
+          <span className="font-mono text-[11px] font-medium normal-case tracking-[0.08em] opacity-90">
+            + unlock $400+ in free coupons
+          </span>
+        </span>
         <ArrowUpRight className="size-5 shrink-0" />
       </motion.a>
 

@@ -48,11 +48,14 @@ export function ProductGrid({
   items,
   accent = 'primary',
   shuffleItems = true,
+  emptyMessage = 'NOTHING IN THIS DRAWER YET',
 }: {
   items: Product[]
   accent?: 'primary' | 'secondary'
   /** When false, keep the incoming order (e.g. LATEST DROPS is date-sorted). */
   shuffleItems?: boolean
+  /** Message shown when there are no items to display. */
+  emptyMessage?: string
 }) {
   const [ordered, setOrdered] = useState<Product[]>([])
   const [visible, setVisible] = useState(BATCH_SIZE)
@@ -75,7 +78,7 @@ export function ProductGrid({
   if (items.length === 0) {
     return (
       <div className="border border-dashed border-border py-24 text-center font-mono text-sm tracking-[0.25em] text-muted-foreground">
-        NOTHING IN THIS DRAWER YET
+        {emptyMessage}
       </div>
     )
   }

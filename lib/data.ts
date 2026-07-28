@@ -116,6 +116,21 @@ export const CATEGORIES = [
   'FIGURINES',
 ] as const
 
+/**
+ * Case-insensitive live-search match. Checks the title/name plus brand and
+ * seller so a query like "Dior" or "Nike" surfaces relevant hits even when the
+ * term isn't in the title. An empty query matches everything.
+ */
+export function matchesQuery(item: Product, query: string): boolean {
+  const q = query.trim().toLowerCase()
+  if (!q) return true
+  return (
+    item.title.toLowerCase().includes(q) ||
+    item.brand.toLowerCase().includes(q) ||
+    item.seller.toLowerCase().includes(q)
+  )
+}
+
 /** Derive a filter list of unique sellers, always led by "ALL". */
 export function sellerFilters(items: Product[]): string[] {
   const unique = Array.from(new Set(items.map((i) => i.seller).filter(Boolean)))

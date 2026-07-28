@@ -9,7 +9,7 @@ export function Socials({ onBack }: { onBack: () => void }) {
   return (
     <ViewShell index="05" title="SOCIALS" subtitle="THE NETWORK" accent="secondary" onBack={onBack}>
       <div className="mb-10 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-        {'Find us everywhere the signal reaches. Tap in — the network never sleeps.'}
+        {'Find me everywhere.'}
       </div>
       <div className="flex flex-col divide-y divide-border border-y border-border">
         {SOCIALS.map((s, i) => {

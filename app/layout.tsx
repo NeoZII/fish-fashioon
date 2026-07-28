@@ -8,9 +8,9 @@ const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono'
 const anton = Anton({ subsets: ['latin'], weight: '400', variable: '--font-anton' })
 
 export const metadata: Metadata = {
-  title: 'FishFashion',
+  title: 'Fashion Sea',
   description:
-    'An interactive, heavily animated experience — latest drops, the archive, the manifesto, and the network.',
+    'The premier archive for luxury and underground fashion. , curated pieces shipped straight to your door',
   generator: 'v0.app',
 }
 

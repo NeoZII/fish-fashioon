@@ -67,7 +67,7 @@ export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () =>
     >
       <div className="mb-8 flex items-end justify-between gap-4">
         <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-          {'Fresh from the void. Everything dropped in the last seven days — newest signals first.'}
+          {'Everything dropped in the last seven days. Daily updates!'}
         </p>
         <span className="shrink-0 font-mono text-xs tabular-nums text-primary">
           {String(latest.length).padStart(2, '0')} NEW

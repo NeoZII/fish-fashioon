@@ -9,8 +9,6 @@ export type MenuItem = {
   skewX: number
   skewY: number
   offsetX: number
-  /** Show a small "NEW" sticker next to the label. */
-  badge?: string
   /** Render the label in a glowing red treatment to grab attention. */
   glowRed?: boolean
   /** Tint the label slightly red (softer than glowRed). */
@@ -27,7 +25,6 @@ export const MENU_ITEMS: MenuItem[] = [
     skewX: -7,
     skewY: 6,
     offsetX: 0,
-    badge: 'NEW',
   },
   {
     id: 'archive',

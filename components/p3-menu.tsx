@@ -109,9 +109,9 @@ export function P3Menu({ onNavigate }: { onNavigate: (id: MenuItem['id']) => voi
                 {item.glowRed && !isActive && (
                   <motion.span
                     aria-hidden
-                    className="pointer-events-none absolute -inset-x-4 -inset-y-2 -z-10 rounded-full bg-primary/40 blur-2xl"
-                    animate={{ opacity: [0.5, 1, 0.5], scale: [0.96, 1.04, 0.96] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                    className="pointer-events-none absolute -inset-x-8 -inset-y-4 -z-10 rounded-full bg-primary/70 blur-3xl"
+                    animate={{ opacity: [0.7, 1, 0.7], scale: [0.94, 1.08, 0.94] }}
+                    transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
                   />
                 )}
 
@@ -128,27 +128,17 @@ export function P3Menu({ onNavigate }: { onNavigate: (id: MenuItem['id']) => voi
                   style={{
                     fontSize: `clamp(2.75rem, ${item.fontSize / 16}rem, ${item.fontSize / 12}rem)`,
                     ...(item.glowRed && !isActive
-                      ? { textShadow: '0 0 18px color-mix(in oklch, var(--primary) 80%, transparent)' }
+                      ? {
+                          color: 'color-mix(in oklch, var(--primary) 82%, white)',
+                          textShadow:
+                            '0 0 12px color-mix(in oklch, var(--primary) 90%, transparent), 0 0 32px color-mix(in oklch, var(--primary) 70%, transparent)',
+                        }
                       : {}),
                   }}
                 >
                   {item.label}
                 </span>
               </span>
-
-              {/* "NEW" sticker — anchored to the button so it stays on-screen and unskewed */}
-              {item.badge && (
-                <motion.span
-                  aria-hidden
-                  initial={{ rotate: 12 }}
-                  animate={{ rotate: [8, 16, 8], scale: [1, 1.1, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                  className="pointer-events-none absolute -top-4 left-1 z-30 flex size-11 items-center justify-center rounded-full bg-secondary font-mono text-[10px] font-bold tracking-[0.05em] text-secondary-foreground shadow-lg md:left-24 md:size-12"
-                  style={{ clipPath: 'polygon(50% 0%, 63% 12%, 79% 8%, 84% 24%, 100% 30%, 92% 45%, 100% 62%, 84% 68%, 82% 85%, 65% 82%, 50% 100%, 35% 82%, 18% 85%, 16% 68%, 0% 62%, 8% 45%, 0% 30%, 16% 24%, 21% 8%, 37% 12%)' }}
-                >
-                  {item.badge}
-                </motion.span>
-              )}
 
               {/* sublabel */}
               <motion.span

@@ -137,18 +137,7 @@ export function P3Menu({ onNavigate }: { onNavigate: (id: MenuItem['id']) => voi
               </span>
 
               {/* "NEW" sticker — anchored to the button so it stays on-screen and unskewed */}
-              {item.badge && (
-                <motion.span
-                  aria-hidden
-                  initial={{ rotate: 12 }}
-                  animate={{ rotate: [8, 16, 8], scale: [1, 1.1, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                  className="pointer-events-none absolute -top-4 left-1 z-30 flex size-11 items-center justify-center rounded-full bg-secondary font-mono text-[10px] font-bold tracking-[0.05em] text-secondary-foreground shadow-lg md:left-24 md:size-12"
-                  style={{ clipPath: 'polygon(50% 0%, 63% 12%, 79% 8%, 84% 24%, 100% 30%, 92% 45%, 100% 62%, 84% 68%, 82% 85%, 65% 82%, 50% 100%, 35% 82%, 18% 85%, 16% 68%, 0% 62%, 8% 45%, 0% 30%, 16% 24%, 21% 8%, 37% 12%)' }}
-                >
-                  {item.badge}
-                </motion.span>
-              )}
+              
 
               {/* sublabel */}
               <motion.span

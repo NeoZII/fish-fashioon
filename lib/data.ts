@@ -110,6 +110,7 @@ export const CATEGORIES = [
   'MERCH',
   'ACCESSORIES',
   'CAPS',
+  'BELTS',
   'BAGS',
   'BACKPACKS',
   'JEWELLERY',

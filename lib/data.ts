@@ -44,10 +44,10 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'manifesto',
-    label: 'MANIFESTO',
+    label: 'HOW TO BUY',
     index: '04',
-    sub: 'WHO WE ARE',
-    fontSize: 68,
+    sub: 'THE TUTORIAL',
+    fontSize: 54,
     skewX: -4,
     skewY: 7,
     offsetX: 20,
@@ -147,11 +147,12 @@ export type Social = {
   handle: string
   meta: string
   href: string
+  comingSoon?: boolean
 }
 
 export const SOCIALS: Social[] = [
-  { id: 's1', label: 'TIKTOK', handle: '@fishfashion', meta: '2.1M FOLLOWERS', href: '#' },
-  { id: 's2', label: 'INSTAGRAM', handle: '@fishfashion', meta: '840K FOLLOWERS', href: '#' },
-  { id: 's3', label: 'YOUTUBE', handle: '/fishfashion', meta: '512K SUBS', href: '#' },
-  { id: 's4', label: 'X / TWITTER', handle: '@fishfashion', meta: '204K FOLLOWERS', href: '#' },
+  { id: 's1', label: 'TIKTOK', handle: '@bikinibottomsfashion', meta: '', href: 'https://www.tiktok.com/@bikinibottomsfashion' },
+  { id: 's2', label: 'INSTAGRAM', handle: '@bikinibottomsfashion', meta: '', href: 'https://www.instagram.com/bikinibottomsfashion?igsh=MWFteDVwZDl5MG5scg%3D%3D&utm_source=qr' },
+  { id: 's3', label: 'DISCORD', handle: '', meta: 'COMING SOON', href: '#', comingSoon: true },
+  { id: 's4', label: 'REDDIT', handle: '', meta: 'COMING SOON', href: '#', comingSoon: true },
 ]

@@ -125,3 +125,40 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: p3-grain 0.6s steps(2) infinite;
 }
+
+/* Promo modal — subtle glow on the header banner */
+@keyframes promo-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 42px 6px color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+}
+
+.promo-glow {
+  animation: promo-glow 2.4s ease-in-out infinite;
+}
+
+/* Promo modal — gentle pulse on the coupon pill */
+@keyframes promo-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+.promo-pulse {
+  animation: promo-pulse 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-glow,
+  .promo-pulse {
+    animation: none;
+  }
+}

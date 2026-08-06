@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react'
 import type { ViewId } from '@/lib/data'
 import { useGlobalItems } from '@/hooks/use-global-items'
 import { P3Menu } from '@/components/p3-menu'
+import { PromoModal } from '@/components/promo-modal'
 import { LoadingScreen } from '@/components/loading-screen'
 import { TransitionCurtain } from '@/components/transition-curtain'
 import { LatestDrops } from '@/components/views/latest-drops'
@@ -41,6 +42,7 @@ export function Experience() {
 
   return (
     <div className="relative min-h-dvh bg-background">
+      <PromoModal />
       <TransitionCurtain show={curtain} />
       <div key={view}>
         {view === 'menu' && <P3Menu onNavigate={navigate} />}

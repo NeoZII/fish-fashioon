@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
-import type { ViewId } from '@/lib/data'
+import type { Product, ViewId } from '@/lib/data'
 import { useGlobalItems } from '@/hooks/use-global-items'
 import { P3Menu } from '@/components/p3-menu'
 import { PromoModal } from '@/components/promo-modal'
@@ -13,8 +13,8 @@ import { Sellers } from '@/components/views/sellers'
 import { Manifesto } from '@/components/views/manifesto'
 import { Socials } from '@/components/views/socials'
 
-export function Experience() {
-  const { globalItems, loading } = useGlobalItems()
+export function Experience({ initialItems = [] }: { initialItems?: Product[] }) {
+  const { globalItems, loading } = useGlobalItems(initialItems)
   const [view, setView] = useState<ViewId>('menu')
   const [curtain, setCurtain] = useState(false)
   const lock = useRef(false)

@@ -60,13 +60,21 @@ function writeCache(items: Product[]) {
   }
 }
 
-export function useGlobalItems() {
-  // Stale-while-revalidate: seed synchronously from the browser cache so repeat
-  // visitors see the catalogue immediately with no loading screen, then we
-  // refresh in the background. First-time visitors start empty and show the
-  // loader only until the (server-cached) fetch resolves.
-  const [globalItems, setGlobalItems] = useState<Product[]>(() => readCache() ?? [])
-  const [loading, setLoading] = useState(() => readCache() === null)
+export function useGlobalItems(initialItems: Product[] = []) {
+  // Priority for the first paint (no loading screen if any of these hit):
+  //   1. server-rendered `initialItems` baked into the page HTML (fastest,
+  //      guarantees products are present on arrival),
+  //   2. the browser's localStorage cache from a previous visit,
+  //   3. empty — show the loader only until the background fetch resolves.
+  // In every case we still refresh in the background below.
+  const seed = initialItems.length ? initialItems : readCache() ?? []
+  const [globalItems, setGlobalItems] = useState<Product[]>(seed)
+  const [loading, setLoading] = useState(seed.length === 0)
+
+  // Persist server data so an immediate reload paints instantly from cache.
+  useEffect(() => {
+    if (initialItems.length) writeCache(initialItems)
+  }, [initialItems])
 
   useEffect(() => {
     let active = true

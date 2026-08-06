@@ -77,38 +77,47 @@ export function useGlobalItems(initialItems: Product[] = []) {
   }, [initialItems])
 
   useEffect(() => {
+    // Normal case: the server already rendered the catalogue into the page (or
+    // we restored it from localStorage), so there is nothing to recover and we
+    // avoid the slow client round-trip through /api/catalogue entirely.
+    if (globalItems.length) {
+      setLoading(false)
+      return
+    }
+
+    // Recovery path only: the server returned nothing AND there was no cached
+    // copy. Fetch client-side so the visitor still gets products instead of an
+    // empty grid.
     let active = true
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
-    async function load() {
+    async function recover() {
       try {
         const res = await fetch(CATALOGUE_ENDPOINT, { signal: controller.signal })
         if (!res.ok) throw new Error(`Catalogue responded ${res.status}`)
         const data = normalize(await res.json())
-        if (!active) return
-        if (data.length) {
+        if (active && data.length) {
           setGlobalItems(data)
           writeCache(data)
         }
-        // If the fresh fetch is empty but we already have cached items on
-        // screen, keep showing the cached ones rather than blanking the site.
       } catch (err) {
-        // On failure, keep any cached items already displayed; otherwise the
-        // grids fall back to their normal empty state.
-        console.log('[v0] Catalogue fetch failed:', err)
+        // Keep the empty state; the grids show their normal "nothing here" copy.
+        console.log('[v0] Catalogue recovery fetch failed:', err)
       } finally {
         clearTimeout(timeout)
         if (active) setLoading(false)
       }
     }
 
-    load()
+    recover()
     return () => {
       active = false
       clearTimeout(timeout)
       controller.abort()
     }
+    // Run once on mount; `globalItems` is only read for its initial value here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return { globalItems, loading }

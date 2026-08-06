@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FALLBACK_ITEMS, type Product } from '@/lib/data'
+import { type Product } from '@/lib/data'
 
 /**
  * Live Google Apps Script deployment feeding the catalogue.
@@ -21,7 +21,7 @@ function normalize(raw: unknown): Product[] {
         id: String(r.id ?? i),
         title: String(r.title ?? ''),
         link: String(r.link ?? '#'),
-        image: String(r.image ?? '/placeholder.svg'),
+        image: String(r.image ?? ''),
         category: String(r.category ?? '').toUpperCase(),
         brand: String(r.brand ?? ''),
         price: String(r.price ?? ''),
@@ -32,25 +32,37 @@ function normalize(raw: unknown): Product[] {
     .filter((p) => p.title)
 }
 
+// Give up on the (occasionally very slow) Apps Script endpoint after this long
+// so the loading screen can never hang indefinitely.
+const FETCH_TIMEOUT_MS = 15000
+
 export function useGlobalItems() {
-  // Start empty so nothing renders until real data (or a fallback) has fully
-  // arrived — this prevents the flash of placeholder cards on first paint.
+  // Start empty so nothing renders until the real data has arrived. If the
+  // fetch fails or returns nothing, we stay empty — no placeholder catalogue.
   const [globalItems, setGlobalItems] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let active = true
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
     async function load() {
       try {
-        const res = await fetch(SHEET_ENDPOINT, { cache: 'no-store' })
+        const res = await fetch(SHEET_ENDPOINT, {
+          cache: 'no-store',
+          signal: controller.signal,
+        })
         if (!res.ok) throw new Error(`Sheet responded ${res.status}`)
         const data = normalize(await res.json())
-        if (active) setGlobalItems(data.length ? data : FALLBACK_ITEMS)
+        if (active) setGlobalItems(data)
       } catch (err) {
-        console.log('[v0] Sheet fetch failed, using fallback catalogue:', err)
-        if (active) setGlobalItems(FALLBACK_ITEMS)
+        // On any failure (network error, bad response, or timeout) render
+        // nothing — the grids show their normal empty state.
+        console.log('[v0] Sheet fetch failed, rendering empty catalogue:', err)
+        if (active) setGlobalItems([])
       } finally {
+        clearTimeout(timeout)
         if (active) setLoading(false)
       }
     }
@@ -58,6 +70,8 @@ export function useGlobalItems() {
     load()
     return () => {
       active = false
+      clearTimeout(timeout)
+      controller.abort()
     }
   }, [])
 

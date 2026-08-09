@@ -140,17 +140,6 @@ export function P3Menu({
                 </span>
               </span>
 
-              {/* "NEW" sticker — anchored to the button so it stays on-screen and unskewed */}
-              
-
-              {/* sublabel */}
-              <motion.span
-                className="hidden font-mono text-xs tracking-[0.3em] text-secondary md:block"
-                animate={{ opacity: isActive ? 1 : 0, x: isActive ? 0 : -8 }}
-                transition={{ duration: 0.25 }}
-              >
-                {item.sub}
-              </motion.span>
             </motion.button>
           )
         })}

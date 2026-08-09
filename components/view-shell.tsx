@@ -6,21 +6,17 @@ import type { ReactNode } from 'react'
 
 export function ViewShell({
   title,
-  subtitle,
   accent = 'primary',
   onBack,
   toolbar,
   children,
 }: {
-  index: string
   title: string
-  subtitle: string
   accent?: 'primary' | 'secondary'
   onBack: () => void
   toolbar?: ReactNode
   children: ReactNode
 }) {
-  const accentClass = accent === 'primary' ? 'text-primary' : 'text-secondary'
   const barClass = accent === 'primary' ? 'bg-primary' : 'bg-secondary'
 
   return (
@@ -38,9 +34,6 @@ export function ViewShell({
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
             MENU
           </button>
-          <div className="flex items-center gap-3">
-            <span className={`font-mono text-xs tracking-[0.25em] ${accentClass}`}>{subtitle}</span>
-          </div>
         </header>
         {toolbar ? <div className="border-t border-border">{toolbar}</div> : null}
       </div>

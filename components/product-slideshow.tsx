@@ -15,10 +15,14 @@ const ADVANCE_MS = 3800
 export function ProductSlideshow({ items }: { items: Product[] }) {
   const isDesktop = useIsDesktop()
 
-  // Stable pool of items that actually have an image, capped so we don't cycle
-  // through thousands of entries.
+  // Stable pool of SELLERS-section items (those with a non-empty seller, same
+  // rule as the Sellers view) that actually have an image, capped so we don't
+  // cycle through thousands of entries.
   const slides = useMemo(
-    () => items.filter((i) => i.image && i.image.trim() !== '').slice(0, 40),
+    () =>
+      items
+        .filter((i) => i.seller.trim() !== '' && i.image && i.image.trim() !== '')
+        .slice(0, 40),
     [items],
   )
 
@@ -40,7 +44,7 @@ export function ProductSlideshow({ items }: { items: Product[] }) {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute right-16 top-1/2 z-10 hidden aspect-[3/4] w-[300px] -translate-y-1/2 lg:right-24 lg:block"
+      className="pointer-events-none absolute right-12 top-1/2 z-10 hidden aspect-[3/4] w-[min(34vw,440px)] -translate-y-1/2 lg:right-20 lg:block xl:right-28 2xl:w-[520px]"
       style={{ transform: 'translateY(-50%) skewX(-4deg)' }}
     >
       {/* accent frame */}
@@ -61,7 +65,7 @@ export function ProductSlideshow({ items }: { items: Product[] }) {
         </AnimatePresence>
 
         {/* dark gradient + caption */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent p-4 pt-10">
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent p-5 pt-12 2xl:p-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={current.id + '-cap'}
@@ -69,16 +73,16 @@ export function ProductSlideshow({ items }: { items: Product[] }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.4 }}
-              className="flex flex-col gap-1"
+              className="flex flex-col gap-1.5"
             >
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-primary">
-                {current.brand || 'ARCHIVE'}
+              <span className="font-mono text-xs uppercase tracking-[0.25em] text-primary">
+                {current.seller || current.brand || 'SELLER'}
               </span>
-              <span className="line-clamp-1 font-display text-lg italic leading-none text-foreground">
+              <span className="line-clamp-1 font-display text-2xl italic leading-none text-foreground 2xl:text-3xl">
                 {current.title}
               </span>
               {current.price ? (
-                <span className="font-mono text-xs text-muted-foreground">{current.price}</span>
+                <span className="font-mono text-sm text-muted-foreground">{current.price}</span>
               ) : null}
             </motion.div>
           </AnimatePresence>

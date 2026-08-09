@@ -158,6 +158,6 @@ export type Social = {
 export const SOCIALS: Social[] = [
   { id: 's1', label: 'TIKTOK', handle: '@bikinibottomsfashion', meta: '', href: 'https://www.tiktok.com/@bikinibottomsfashion' },
   { id: 's2', label: 'INSTAGRAM', handle: '@bikinibottomsfashion', meta: '', href: 'https://www.instagram.com/bikinibottomsfashion?igsh=MWFteDVwZDl5MG5scg%3D%3D&utm_source=qr' },
-  { id: 's3', label: 'DISCORD', handle: '', meta: 'COMING SOON', href: '#', comingSoon: true },
+  { id: 's3', label: 'DISCORD', handle: 'discord.gg/q2EJG25Ebc', meta: '', href: 'https://discord.gg/q2EJG25Ebc' },
   { id: 's4', label: 'REDDIT', handle: '', meta: 'COMING SOON', href: '#', comingSoon: true },
 ]

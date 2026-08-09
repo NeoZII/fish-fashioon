@@ -58,7 +58,7 @@ export function P3Menu({
       </motion.div>
 
       {/* desktop-only auto-rotating product slideshow */}
-      <ProductSlideshow items={items} />
+      <ProductSlideshow items={items} onOpenArchive={() => onNavigate('archive')} />
 
       {/* menu list */}
       <nav

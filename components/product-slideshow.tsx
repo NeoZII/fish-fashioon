@@ -12,19 +12,30 @@ const ADVANCE_MS = 3800
  * Desktop only — it returns null on mobile (via useIsDesktop) so none of the
  * product images are ever requested on phones.
  */
-export function ProductSlideshow({ items }: { items: Product[] }) {
+export function ProductSlideshow({
+  items,
+  onOpenArchive,
+}: {
+  items: Product[]
+  onOpenArchive?: () => void
+}) {
   const isDesktop = useIsDesktop()
 
-  // Stable pool of SELLERS-section items (those with a non-empty seller, same
-  // rule as the Sellers view) that actually have an image, capped so we don't
-  // cycle through thousands of entries.
-  const slides = useMemo(
-    () =>
-      items
-        .filter((i) => i.seller.trim() !== '' && i.image && i.image.trim() !== '')
-        .slice(0, 40),
-    [items],
-  )
+  // Randomized pool of SELLERS-section items (those with a non-empty seller,
+  // same rule as the Sellers view) that actually have an image. Shuffled once
+  // so the slideshow order isn't the sheet's seller ordering, then capped so we
+  // don't cycle through thousands of entries.
+  const slides = useMemo(() => {
+    const pool = items.filter(
+      (i) => i.seller.trim() !== '' && i.image && i.image.trim() !== '',
+    )
+    // Fisher–Yates shuffle on a copy.
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[pool[i], pool[j]] = [pool[j], pool[i]]
+    }
+    return pool.slice(0, 40)
+  }, [items])
 
   const [index, setIndex] = useState(0)
 
@@ -42,16 +53,16 @@ export function ProductSlideshow({ items }: { items: Product[] }) {
   const current = slides[index % slides.length]
 
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-y-0 right-12 z-10 hidden items-center py-20 lg:right-20 lg:flex xl:right-28"
-    >
-      <div
-        className="relative aspect-[3/4] w-[min(34vw,440px)] 2xl:w-[520px]"
+    <div className="absolute inset-y-0 right-12 z-10 hidden items-center py-20 lg:right-20 lg:flex xl:right-28">
+      <button
+        type="button"
+        onClick={onOpenArchive}
+        aria-label="Open The Archive"
+        className="group relative aspect-[3/4] w-[min(34vw,440px)] cursor-pointer outline-none 2xl:w-[520px]"
         style={{ transform: 'skewX(-4deg)' }}
       >
         {/* accent frame */}
-        <div className="absolute -inset-3 border border-primary/30" />
+        <div className="absolute -inset-3 border border-primary/30 transition-colors duration-300 group-hover:border-primary group-focus-visible:border-primary" />
         <div className="relative h-full w-full overflow-hidden bg-card">
         <AnimatePresence mode="popLayout">
           <motion.img
@@ -91,7 +102,7 @@ export function ProductSlideshow({ items }: { items: Product[] }) {
           </AnimatePresence>
         </div>
         </div>
-      </div>
+      </button>
     </div>
   )
 }

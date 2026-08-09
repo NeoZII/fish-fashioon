@@ -44,12 +44,15 @@ export function ProductSlideshow({ items }: { items: Product[] }) {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute right-12 top-1/2 z-10 hidden aspect-[3/4] w-[min(34vw,440px)] -translate-y-1/2 lg:right-20 lg:block xl:right-28 2xl:w-[520px]"
-      style={{ transform: 'translateY(-50%) skewX(-4deg)' }}
+      className="pointer-events-none absolute inset-y-0 right-12 z-10 hidden items-center py-20 lg:right-20 lg:flex xl:right-28"
     >
-      {/* accent frame */}
-      <div className="absolute -inset-3 border border-primary/30" />
-      <div className="relative h-full w-full overflow-hidden bg-card">
+      <div
+        className="relative aspect-[3/4] w-[min(34vw,440px)] 2xl:w-[520px]"
+        style={{ transform: 'skewX(-4deg)' }}
+      >
+        {/* accent frame */}
+        <div className="absolute -inset-3 border border-primary/30" />
+        <div className="relative h-full w-full overflow-hidden bg-card">
         <AnimatePresence mode="popLayout">
           <motion.img
             key={current.id + index}
@@ -86,6 +89,7 @@ export function ProductSlideshow({ items }: { items: Product[] }) {
               ) : null}
             </motion.div>
           </AnimatePresence>
+        </div>
         </div>
       </div>
     </div>

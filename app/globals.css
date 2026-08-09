@@ -47,9 +47,9 @@
   --popover: oklch(0.1 0.006 260);
   --popover-foreground: oklch(0.97 0 0);
 
-  /* deep crimson accent */
-  --primary: oklch(0.52 0.21 22);
-  --primary-foreground: oklch(0.98 0 0);
+  /* vibrant cyan accent (was crimson) */
+  --primary: oklch(0.75 0.14 215);
+  --primary-foreground: oklch(0.15 0.02 230);
 
   /* electric blue secondary */
   --secondary: oklch(0.62 0.19 250);
@@ -65,7 +65,7 @@
 
   --border: oklch(0.24 0.006 260);
   --input: oklch(0.24 0.006 260);
-  --ring: oklch(0.52 0.21 22);
+  --ring: oklch(0.75 0.14 215);
 }
 
 @layer base {

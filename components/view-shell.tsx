@@ -5,7 +5,6 @@ import { ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 export function ViewShell({
-  index,
   title,
   subtitle,
   accent = 'primary',
@@ -41,8 +40,6 @@ export function ViewShell({
           </button>
           <div className="flex items-center gap-3">
             <span className={`font-mono text-xs tracking-[0.25em] ${accentClass}`}>{subtitle}</span>
-            <span className={`h-4 w-[2px] ${barClass}`} />
-            <span className="font-mono text-xs tabular-nums text-muted-foreground">{index}</span>
           </div>
         </header>
         {toolbar ? <div className="border-t border-border">{toolbar}</div> : null}

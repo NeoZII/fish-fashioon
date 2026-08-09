@@ -38,7 +38,7 @@ export const MENU_ITEMS: MenuItem[] = [
     skewX: -11,
     skewY: -8,
     offsetX: 34,
-    redAccent: true,
+    glowRed: true,
   },
   {
     id: 'sellers',

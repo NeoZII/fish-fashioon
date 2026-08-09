@@ -45,7 +45,7 @@ export function Experience({ initialItems = [] }: { initialItems?: Product[] }) 
       <PromoModal />
       <TransitionCurtain show={curtain} />
       <div key={view}>
-        {view === 'menu' && <P3Menu onNavigate={navigate} />}
+        {view === 'menu' && <P3Menu onNavigate={navigate} items={globalItems} />}
         {view === 'drops' && (loading ? <LoadingScreen /> : <LatestDrops items={globalItems} onBack={back} />)}
         {view === 'archive' && (loading ? <LoadingScreen /> : <TheArchive items={globalItems} onBack={back} />)}
         {view === 'sellers' && (loading ? <LoadingScreen /> : <Sellers items={globalItems} onBack={back} />)}

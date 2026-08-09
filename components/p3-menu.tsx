@@ -2,9 +2,16 @@
 
 import { motion } from 'framer-motion'
 import { useCallback, useEffect, useState } from 'react'
-import { MENU_ITEMS, type MenuItem } from '@/lib/data'
+import { MENU_ITEMS, type MenuItem, type Product } from '@/lib/data'
+import { ProductSlideshow } from '@/components/product-slideshow'
 
-export function P3Menu({ onNavigate }: { onNavigate: (id: MenuItem['id']) => void }) {
+export function P3Menu({
+  onNavigate,
+  items = [],
+}: {
+  onNavigate: (id: MenuItem['id']) => void
+  items?: Product[]
+}) {
   const [active, setActive] = useState(0)
 
   const move = useCallback((dir: number) => {
@@ -47,8 +54,11 @@ export function P3Menu({ onNavigate }: { onNavigate: (id: MenuItem['id']) => voi
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="pointer-events-none absolute left-4 top-6 z-0 flex origin-top-left flex-col font-display italic leading-[0.82] text-foreground/5 md:left-8"
       >
-        <span className="text-[16vw] md:text-[9vw]">FishFashion</span>
+        <span className="text-[16vw] md:text-[9vw]">FashionSea</span>
       </motion.div>
+
+      {/* desktop-only auto-rotating product slideshow */}
+      <ProductSlideshow items={items} />
 
       {/* menu list */}
       <nav
@@ -82,14 +92,6 @@ export function P3Menu({ onNavigate }: { onNavigate: (id: MenuItem['id']) => voi
                 animate={{ opacity: isActive ? 1 : 0 }}
                 transition={{ duration: 0.3 }}
               />
-
-              <span
-                className={`hidden font-mono text-sm tabular-nums transition-colors md:block ${
-                  isActive ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                {item.index}
-              </span>
 
               <span
                 className="relative block"
@@ -126,7 +128,9 @@ export function P3Menu({ onNavigate }: { onNavigate: (id: MenuItem['id']) => voi
                           : 'text-foreground/80'
                   }`}
                   style={{
-                    fontSize: `clamp(2.75rem, ${item.fontSize / 16}rem, ${item.fontSize / 12}rem)`,
+                    // Scales down on phones (vw-driven), capped at the original
+                    // desktop size (fontSize/16rem) so PC sizing is unchanged.
+                    fontSize: `clamp(1.75rem, ${(item.fontSize / 8).toFixed(1)}vw, ${item.fontSize / 16}rem)`,
                     ...(item.glowRed && !isActive
                       ? { textShadow: '0 0 18px color-mix(in oklch, var(--primary) 80%, transparent)' }
                       : {}),

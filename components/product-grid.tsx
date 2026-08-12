@@ -1,7 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowUpRight, Check, Flag, X } from 'lucide-react'
+import { ArrowUpRight, Check, Flag, Shuffle, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Product } from '@/lib/data'
 
@@ -102,12 +102,13 @@ function seededRank(seed: number, id: string): number {
 }
 
 /**
- * Shuffle deterministically from the session seed. Because ordering is derived
- * per-item from a stable seed, the relative order is preserved even when the
- * incoming list is filtered (category, seller, search).
+ * Shuffle deterministically. Without an override, uses the stable session seed
+ * so the order survives in-session navigation. Passing an `overrideSeed`
+ * (from the SHUFFLE button) reorders instantly without touching the session
+ * seed, so the base order is unaffected.
  */
-function shuffle<T extends { id: string }>(input: T[]): T[] {
-  const seed = getSessionSeed()
+function shuffle<T extends { id: string }>(input: T[], overrideSeed?: number): T[] {
+  const seed = overrideSeed ?? getSessionSeed()
   return [...input].sort((a, b) => seededRank(seed, a.id) - seededRank(seed, b.id))
 }
 
@@ -115,12 +116,15 @@ export function ProductGrid({
   items,
   accent = 'primary',
   shuffleItems = true,
+  showShuffle = false,
   emptyMessage = 'NOTHING IN THIS DRAWER YET',
 }: {
   items: Product[]
   accent?: 'primary' | 'secondary'
   /** When false, keep the incoming order (e.g. LATEST DROPS is date-sorted). */
   shuffleItems?: boolean
+  /** Show the manual SHUFFLE button (Archive tab). */
+  showShuffle?: boolean
   /** Message shown when there are no items to display. */
   emptyMessage?: string
 }) {
@@ -128,6 +132,11 @@ export function ProductGrid({
   const [visible, setVisible] = useState(BATCH_SIZE)
   const [reportTarget, setReportTarget] = useState<Product | null>(null)
   const [showToast, setShowToast] = useState(false)
+  // A manual override seed set by the SHUFFLE button, and a key that bumps on
+  // each shuffle so the grid replays its staggered entrance animation.
+  const [manualSeed, setManualSeed] = useState<number | null>(null)
+  const [shuffleKey, setShuffleKey] = useState(0)
+  const [spinning, setSpinning] = useState(false)
 
   const handleReported = () => {
     setReportTarget(null)
@@ -135,12 +144,23 @@ export function ProductGrid({
     window.setTimeout(() => setShowToast(false), 2000)
   }
 
+  const handleShuffle = () => {
+    const seed = Math.floor(Math.random() * 0x7fffffff)
+    setManualSeed(seed)
+    setOrdered(shuffle(items, seed))
+    setVisible(BATCH_SIZE)
+    setShuffleKey((k) => k + 1)
+    setSpinning(true)
+    window.setTimeout(() => setSpinning(false), 600)
+  }
+
   // Re-order + reset pagination whenever the source list changes
   // (new fetch, category filter, seller switch, or a fresh page load).
+  // A manual shuffle seed, if present, is preserved across filter changes.
   useEffect(() => {
-    setOrdered(shuffleItems ? shuffle(items) : items)
+    setOrdered(shuffleItems ? shuffle(items, manualSeed ?? undefined) : items)
     setVisible(BATCH_SIZE)
-  }, [items, shuffleItems])
+  }, [items, shuffleItems, manualSeed])
 
   if (items.length === 0) {
     return (
@@ -155,10 +175,32 @@ export function ProductGrid({
 
   return (
     <div>
+      {showShuffle && (
+        <div className="mb-6 flex justify-end">
+          <button
+            type="button"
+            onClick={handleShuffle}
+            aria-label="Shuffle products"
+            className="group relative flex items-center gap-2.5 skew-x-[-8deg] overflow-hidden bg-secondary px-6 py-3 font-mono text-xs font-bold tracking-[0.3em] text-secondary-foreground transition-all duration-300 hover:shadow-[0_0_28px_-4px_var(--color-secondary)] active:scale-95"
+          >
+            {/* sheen swipe on hover */}
+            <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+            <motion.span
+              animate={spinning ? { rotate: 360 } : { rotate: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex skew-x-[8deg]"
+            >
+              <Shuffle className="size-4" />
+            </motion.span>
+            <span className="skew-x-[8deg]">SHUFFLE</span>
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
         {shown.map((item, i) => (
           <ProductCard
-            key={item.id}
+            key={`${shuffleKey}-${item.id}`}
             product={item}
             index={i % BATCH_SIZE}
             accent={accent}

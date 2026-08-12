@@ -63,6 +63,7 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
       <ProductGrid
         items={filtered}
         accent="secondary"
+        showShuffle
         emptyMessage={query ? 'NO ITEMS FOUND' : 'NOTHING IN THIS DRAWER YET'}
       />
     </ViewShell>

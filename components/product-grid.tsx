@@ -36,15 +36,43 @@ function parsePrice(raw: string): { usd: string; jpy: string | null } {
 
 const SHUFFLE_SEED_KEY = 'catalog-shuffle-seed'
 
+/** True only if this page load was a voluntary browser refresh/reload. */
+function isPageReload(): boolean {
+  if (typeof window === 'undefined' || !window.performance) return false
+  try {
+    const [nav] = window.performance.getEntriesByType(
+      'navigation',
+    ) as PerformanceNavigationTiming[]
+    return nav?.type === 'reload'
+  } catch {
+    return false
+  }
+}
+
+// Regenerate the seed at most once per page load, so multiple grid mounts in
+// the same load share one order instead of each making its own.
+let reloadSeedApplied = false
+
 /**
- * Get (or lazily create) a random seed that lives for the current browser
- * session. sessionStorage survives in-session navigation — including going
- * into a product and back — but is cleared for a new tab or after the browser
- * is closed, so a fresh session gets a brand-new order.
+ * Get (or lazily create) a random seed for the catalog order.
+ *
+ * The seed lives in sessionStorage, so it survives in-session client-side
+ * navigation — going into a product and back keeps the same order. A voluntary
+ * browser refresh generates a NEW seed (detected via the Navigation Timing
+ * API), and a new tab / restarted browser starts fresh as well.
  */
 function getSessionSeed(): number {
   if (typeof window === 'undefined') return 1
   try {
+    // On a voluntary refresh, mint a new seed once for this page load.
+    if (!reloadSeedApplied && isPageReload()) {
+      reloadSeedApplied = true
+      const seed = Math.floor(Math.random() * 0x7fffffff)
+      window.sessionStorage.setItem(SHUFFLE_SEED_KEY, String(seed))
+      return seed
+    }
+    reloadSeedApplied = true
+
     const existing = window.sessionStorage.getItem(SHUFFLE_SEED_KEY)
     if (existing) return Number(existing)
     const seed = Math.floor(Math.random() * 0x7fffffff)

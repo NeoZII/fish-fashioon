@@ -1,39 +1,11 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowUpRight, Check, ChevronDown, Flag, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowUpRight, Check, Flag, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import type { Product } from '@/lib/data'
-import { useIsDesktop } from '@/hooks/use-is-desktop'
 
 const BATCH_SIZE = 16
-
-/** Options for the "Show" (items-per-page) dropdown — desktop only. */
-const PAGE_SIZES = [12, 24, 48, 96] as const
-const DEFAULT_PAGE_SIZE = 24
-
-type SortKey = 'default' | 'price-asc' | 'price-desc' | 'az' | 'za'
-
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: 'default', label: 'Default (Shuffled)' },
-  { value: 'price-asc', label: 'Price: Low to High' },
-  { value: 'price-desc', label: 'Price: High to Low' },
-  { value: 'az', label: 'Alphabetical: A-Z' },
-  { value: 'za', label: 'Alphabetical: Z-A' },
-]
-
-/**
- * Parse the numeric USD value from a combined price string like
- * "$18.46 , ¥ 119,99" — strips the "$" and ignores everything after the comma
- * (the JPY half). Returns null when there is no parseable USD amount so those
- * items can be sorted to the end.
- */
-function parsePriceValue(raw: string): number | null {
-  const match = raw.match(/\$\s*([\d,]+(?:\.\d+)?)/)
-  if (!match) return null
-  const num = Number.parseFloat(match[1].replace(/,/g, ''))
-  return Number.isFinite(num) ? num : null
-}
 
 const REPORT_ENDPOINT =
   'https://script.google.com/macros/s/AKfycbx9v3aqzotQmh3zlbD6oVh0xdwcoiDt6Z5qzzM7L1ZLABQSNUhAbWZgJooCnRG8hN5w/exec'
@@ -85,17 +57,10 @@ export function ProductGrid({
   /** Message shown when there are no items to display. */
   emptyMessage?: string
 }) {
-  const isDesktop = useIsDesktop()
-
   const [ordered, setOrdered] = useState<Product[]>([])
-  const [sort, setSort] = useState<SortKey>('default')
-  // Items-per-page is desktop-only; mobile always uses the fixed BATCH_SIZE.
-  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE)
   const [visible, setVisible] = useState(BATCH_SIZE)
   const [reportTarget, setReportTarget] = useState<Product | null>(null)
   const [showToast, setShowToast] = useState(false)
-
-  const batch = isDesktop ? pageSize : BATCH_SIZE
 
   const handleReported = () => {
     setReportTarget(null)
@@ -103,44 +68,12 @@ export function ProductGrid({
     window.setTimeout(() => setShowToast(false), 2000)
   }
 
-  // Re-order (base ordering) + reset pagination whenever the source list
-  // changes (new fetch, category filter, seller switch, fresh page load).
+  // Re-order + reset pagination whenever the source list changes
+  // (new fetch, category filter, seller switch, or a fresh page load).
   useEffect(() => {
     setOrdered(shuffleItems ? shuffle(items) : items)
+    setVisible(BATCH_SIZE)
   }, [items, shuffleItems])
-
-  // Apply the chosen sort on top of the base order. "default" keeps the base
-  // order (shuffled, or the incoming order when shuffleItems is false).
-  const sortedItems = useMemo(() => {
-    if (sort === 'default') return ordered
-    const copy = [...ordered]
-    switch (sort) {
-      case 'price-asc':
-      case 'price-desc': {
-        const dir = sort === 'price-asc' ? 1 : -1
-        return copy.sort((a, b) => {
-          const pa = parsePriceValue(a.price)
-          const pb = parsePriceValue(b.price)
-          // Items with no parseable USD price always sort to the end.
-          if (pa === null && pb === null) return 0
-          if (pa === null) return 1
-          if (pb === null) return -1
-          return (pa - pb) * dir
-        })
-      }
-      case 'az':
-        return copy.sort((a, b) => a.title.localeCompare(b.title))
-      case 'za':
-        return copy.sort((a, b) => b.title.localeCompare(a.title))
-      default:
-        return copy
-    }
-  }, [ordered, sort])
-
-  // Reset how many are visible whenever the ordering, sort, or batch changes.
-  useEffect(() => {
-    setVisible(batch)
-  }, [batch, sort, ordered])
 
   if (items.length === 0) {
     return (
@@ -150,37 +83,17 @@ export function ProductGrid({
     )
   }
 
-  const shown = sortedItems.slice(0, visible)
-  const hasMore = visible < sortedItems.length
+  const shown = ordered.slice(0, visible)
+  const hasMore = visible < ordered.length
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <GridSelect
-          label="SORT BY"
-          value={sort}
-          onChange={(v) => setSort(v as SortKey)}
-          accent={accent}
-          options={SORT_OPTIONS}
-        />
-        {/* Items-per-page: desktop only — never rendered on mobile. */}
-        {isDesktop && (
-          <GridSelect
-            label="SHOW"
-            value={String(pageSize)}
-            onChange={(v) => setPageSize(Number(v))}
-            accent={accent}
-            options={PAGE_SIZES.map((n) => ({ value: String(n), label: String(n) }))}
-          />
-        )}
-      </div>
-
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
         {shown.map((item, i) => (
           <ProductCard
             key={item.id}
             product={item}
-            index={i % batch}
+            index={i % BATCH_SIZE}
             accent={accent}
             onReport={() => setReportTarget(item)}
           />
@@ -215,11 +128,11 @@ export function ProductGrid({
       {hasMore && (
         <div className="mt-10 flex flex-col items-center gap-3">
           <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">
-            {String(Math.min(visible, sortedItems.length)).padStart(2, '0')} / {String(sortedItems.length).padStart(2, '0')}
+            {String(Math.min(visible, ordered.length)).padStart(2, '0')} / {String(ordered.length).padStart(2, '0')}
           </span>
           <button
             type="button"
-            onClick={() => setVisible((v) => v + batch)}
+            onClick={() => setVisible((v) => v + BATCH_SIZE)}
             className={`skew-x-[-8deg] px-8 py-3 font-mono text-xs font-bold tracking-[0.3em] transition-colors ${
               accent === 'primary'
                 ? 'bg-primary text-primary-foreground hover:bg-foreground hover:text-background'
@@ -231,43 +144,6 @@ export function ProductGrid({
         </div>
       )}
     </div>
-  )
-}
-
-function GridSelect({
-  label,
-  value,
-  onChange,
-  accent,
-  options,
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  accent: 'primary' | 'secondary'
-  options: { value: string; label: string }[]
-}) {
-  const accentText = accent === 'primary' ? 'text-primary' : 'text-secondary'
-  return (
-    <label className="flex items-center gap-2">
-      <span className="shrink-0 font-mono text-[10px] font-bold tracking-[0.25em] text-muted-foreground">
-        {label}
-      </span>
-      <div className="relative skew-x-[-8deg] border border-border transition-colors focus-within:border-foreground hover:border-foreground">
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={`skew-x-[8deg] cursor-pointer appearance-none bg-transparent py-2 pl-3 pr-8 font-mono text-[11px] font-bold tracking-[0.15em] text-foreground outline-none ${accentText}`}
-        >
-          {options.map((o) => (
-            <option key={o.value} value={o.value} className="bg-background text-foreground">
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 skew-x-[8deg] text-muted-foreground" />
-      </div>
-    </label>
   )
 }
 

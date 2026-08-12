@@ -34,14 +34,53 @@ function parsePrice(raw: string): { usd: string; jpy: string | null } {
   return { usd, jpy }
 }
 
-/** Fisher–Yates shuffle — returns a new, randomly ordered array. */
-function shuffle<T>(input: T[]): T[] {
-  const arr = [...input]
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+const SHUFFLE_SEED_KEY = 'catalog-shuffle-seed'
+
+/**
+ * Get (or lazily create) a random seed that lives for the current browser
+ * session. sessionStorage survives in-session navigation — including going
+ * into a product and back — but is cleared for a new tab or after the browser
+ * is closed, so a fresh session gets a brand-new order.
+ */
+function getSessionSeed(): number {
+  if (typeof window === 'undefined') return 1
+  try {
+    const existing = window.sessionStorage.getItem(SHUFFLE_SEED_KEY)
+    if (existing) return Number(existing)
+    const seed = Math.floor(Math.random() * 0x7fffffff)
+    window.sessionStorage.setItem(SHUFFLE_SEED_KEY, String(seed))
+    return seed
+  } catch {
+    // sessionStorage unavailable (e.g. privacy mode) — fall back to a random
+    // per-mount seed so the grid still renders in a shuffled order.
+    return Math.floor(Math.random() * 0x7fffffff)
   }
-  return arr
+}
+
+/**
+ * Deterministic hash of (seed + product id) mapped to [0, 1). The same seed
+ * and id always yield the same rank, which is what makes the order stable
+ * within a session.
+ */
+function seededRank(seed: number, id: string): number {
+  let h = seed >>> 0
+  for (let i = 0; i < id.length; i++) {
+    h = Math.imul(h ^ id.charCodeAt(i), 0x01000193) >>> 0
+  }
+  h ^= h >>> 15
+  h = Math.imul(h, 0x2c1b3c6d) >>> 0
+  h ^= h >>> 13
+  return (h >>> 0) / 0xffffffff
+}
+
+/**
+ * Shuffle deterministically from the session seed. Because ordering is derived
+ * per-item from a stable seed, the relative order is preserved even when the
+ * incoming list is filtered (category, seller, search).
+ */
+function shuffle<T extends { id: string }>(input: T[]): T[] {
+  const seed = getSessionSeed()
+  return [...input].sort((a, b) => seededRank(seed, a.id) - seededRank(seed, b.id))
 }
 
 export function ProductGrid({

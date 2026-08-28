@@ -81,17 +81,28 @@
   }
 }
 
-/* Diagonal moving stripe background */
+/* Diagonal moving stripe background.
+   Driven by a GPU-composited transform on an oversized pseudo-element instead
+   of animating `background-position` (which repaints the whole viewport every
+   frame). Translating along the +45° axis slides the stripes along their own
+   direction, so the loop is perfectly seamless. */
 @keyframes p3-stripes-move {
   from {
-    background-position: 0 0;
+    transform: translate3d(0, 0, 0);
   }
   to {
-    background-position: 400px 400px;
+    transform: translate3d(400px, 400px, 0);
   }
 }
 
 .p3-stripes {
+  overflow: hidden;
+}
+
+.p3-stripes::before {
+  content: '';
+  position: absolute;
+  inset: -420px;
   background-image: repeating-linear-gradient(
     -45deg,
     transparent 0px,
@@ -100,6 +111,7 @@
     color-mix(in oklch, var(--primary) 8%, transparent) 40px
   );
   animation: p3-stripes-move 12s linear infinite;
+  will-change: transform;
 }
 
 @keyframes p3-grain {
@@ -124,6 +136,42 @@
 .p3-grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: p3-grain 0.6s steps(2) infinite;
+}
+
+/* Floating decorative shapes on the menu — GPU-composited transform loop
+   (replaces per-shape JS/requestAnimationFrame animation). Duration is set
+   per-shape via the --float-dur custom property. */
+@keyframes p3-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(45deg);
+  }
+}
+
+.p3-float {
+  animation: p3-float var(--float-dur, 10s) ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Pulsing glow behind the highlighted menu item (was an infinite JS loop). */
+@keyframes p3-menu-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+.p3-menu-glow {
+  animation: p3-menu-glow 2s ease-in-out infinite;
+  will-change: opacity, transform;
 }
 
 /* Promo modal — subtle glow on the header banner */
@@ -158,7 +206,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .promo-glow,
-  .promo-pulse {
+  .promo-pulse,
+  .p3-stripes::before,
+  .p3-float,
+  .p3-menu-glow {
     animation: none;
   }
 }

@@ -317,7 +317,7 @@ function ProductCard({
             onClick={onReport}
             aria-label={`Report ${product.title}`}
             title="Report this item"
-            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/40 text-white/70 backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-white"
+            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/55 text-white/70 transition-colors hover:bg-black/75 hover:text-white"
           >
             <Flag className="size-3.5" />
           </button>

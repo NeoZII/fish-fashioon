@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useCallback, useEffect, useState } from 'react'
+import { type CSSProperties, useCallback, useEffect, useState } from 'react'
 import { MENU_ITEMS, type MenuItem, type Product } from '@/lib/data'
 import { ProductSlideshow } from '@/components/product-slideshow'
 
@@ -107,13 +107,11 @@ export function P3Menu({
                   transition={{ duration: 0.28, ease: [0.34, 1.56, 0.64, 1] }}
                 />
 
-                {/* pulsing red glow for the highlighted "HOW TO BUY" item */}
+                {/* pulsing glow for the highlighted item (CSS-driven) */}
                 {item.glowRed && !isActive && (
-                  <motion.span
+                  <span
                     aria-hidden
-                    className="pointer-events-none absolute -inset-x-4 -inset-y-2 -z-10 rounded-full bg-primary/40 blur-2xl"
-                    animate={{ opacity: [0.5, 1, 0.5], scale: [0.96, 1.04, 0.96] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                    className="p3-menu-glow pointer-events-none absolute -inset-x-4 -inset-y-2 -z-10 rounded-full bg-primary/40 blur-2xl"
                   />
                 )}
 
@@ -175,19 +173,20 @@ function FloatingShapes() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {shapes.map((s, i) => (
-        <motion.div
+        <div
           key={i}
-          className="absolute opacity-[0.14]"
-          style={{
-            width: s.size,
-            height: s.size,
-            top: s.top,
-            left: s.left,
-            background: s.color,
-            clipPath: s.clip,
-          }}
-          animate={{ y: [0, -30, 0], rotate: [0, 45, 0] }}
-          transition={{ duration: s.dur, repeat: Infinity, ease: 'easeInOut' }}
+          className="p3-float absolute opacity-[0.14]"
+          style={
+            {
+              width: s.size,
+              height: s.size,
+              top: s.top,
+              left: s.left,
+              background: s.color,
+              clipPath: s.clip,
+              '--float-dur': `${s.dur}s`,
+            } as CSSProperties
+          }
         />
       ))}
     </div>

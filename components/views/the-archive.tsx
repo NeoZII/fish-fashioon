@@ -28,7 +28,7 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
   return (
     <ViewShell
       index="02"
-      title="THE ARCHIVE"
+      title="ALL ITEMS"
       subtitle="THE GALLERY"
       accent="secondary"
       onBack={onBack}

@@ -31,7 +31,7 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'archive',
-    label: 'THE ARCHIVE',
+    label: 'ALL ITEMS',
     index: '02',
     sub: 'THE GALLERY',
     fontSize: 74,

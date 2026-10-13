@@ -60,19 +60,23 @@ export function P3Menu({
       {/* desktop-only auto-rotating product slideshow */}
       <ProductSlideshow items={items} onOpenArchive={() => onNavigate('archive')} />
 
-      {/* drop countdown tab — top center */}
-      <div className="pointer-events-none absolute inset-x-0 top-5 z-30 flex justify-center md:top-6">
+      {/* featured countdown release — premium launch banner */}
+      <div className="pointer-events-none absolute inset-x-0 top-4 z-30 flex justify-center px-4 md:top-6">
         <motion.button
           type="button"
           onClick={() => onNavigate('countdown')}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-auto relative flex items-center gap-2 bg-primary px-5 py-2.5 font-mono text-xs font-bold tracking-[0.25em] text-primary-foreground shadow-lg transition-colors hover:bg-foreground hover:text-background md:text-sm"
-          style={{ clipPath: 'polygon(4% 0, 100% 0, 96% 100%, 0 100%)' }}
+          aria-label="Open Burberry Puffer Countdown"
+          className="group pointer-events-auto relative flex min-h-12 w-full max-w-[min(92vw,38rem)] items-center justify-center gap-3 overflow-hidden bg-destructive px-5 py-3 font-mono text-[10px] font-bold tracking-[0.18em] text-destructive-foreground shadow-[0_0_32px_-8px_var(--color-destructive)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_42px_-6px_var(--color-destructive)] active:scale-[0.98] md:min-h-14 md:px-8 md:text-sm md:tracking-[0.28em]"
+          style={{ clipPath: 'polygon(3% 0, 100% 0, 97% 100%, 0 100%)' }}
         >
-          <span className="size-2 animate-pulse rounded-full bg-current" aria-hidden />
-          PUFFER DROP COUNTDOWN
+          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+          <span className="relative flex size-2.5 shrink-0 items-center justify-center rounded-full bg-current" aria-hidden>
+            <span className="size-1 rounded-full bg-destructive-foreground" />
+          </span>
+          <span className="relative">BURBERRY PUFFER COUNTDOWN</span>
         </motion.button>
       </div>
 

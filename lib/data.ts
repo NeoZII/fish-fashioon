@@ -1,4 +1,4 @@
-export type ViewId = 'menu' | 'drops' | 'archive' | 'sellers' | 'manifesto' | 'socials'
+export type ViewId = 'menu' | 'drops' | 'archive' | 'sellers' | 'manifesto' | 'socials' | 'countdown'
 
 export type MenuItem = {
   id: Exclude<ViewId, 'menu'>

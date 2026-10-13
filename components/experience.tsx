@@ -12,6 +12,7 @@ import { TheArchive } from '@/components/views/the-archive'
 import { Sellers } from '@/components/views/sellers'
 import { Manifesto } from '@/components/views/manifesto'
 import { Socials } from '@/components/views/socials'
+import { Countdown } from '@/components/views/countdown'
 
 export function Experience({ initialItems = [] }: { initialItems?: Product[] }) {
   const { globalItems, loading } = useGlobalItems(initialItems)
@@ -51,6 +52,7 @@ export function Experience({ initialItems = [] }: { initialItems?: Product[] }) 
         {view === 'sellers' && (loading ? <LoadingScreen /> : <Sellers items={globalItems} onBack={back} />)}
         {view === 'manifesto' && <Manifesto onBack={back} />}
         {view === 'socials' && <Socials onBack={back} />}
+        {view === 'countdown' && <Countdown onBack={back} />}
       </div>
     </div>
   )

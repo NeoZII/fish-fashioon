@@ -7,12 +7,12 @@ import { ViewShell } from '@/components/view-shell'
 
 // ---- Edit the drop here ----------------------------------------------------
 const DROP = {
-  title: 'PUFFER DROP',
+  title: 'BURBERRY PUFFER COUNTDOWN',
   // Friday 16 Oct 2026, 20:00 Brussels time (CEST = UTC+2)
   dropAt: '2026-10-16T20:00:00+02:00',
   dateLabel: 'FRIDAY 16 OCT · 20:00',
   // Upload your photo to /public/drops/countdown.jpg (falls back to a placeholder)
-  image: '/drops/countdown.jpg',
+  image: '/drops/countdown.png',
   ctaText: 'CREATE AN ACCOUNT TO BE ABLE TO BUY WHEN IT DROPS',
   ctaLink: 'https://ikako.vip/r/dqh2u',
 }
@@ -44,14 +44,19 @@ export function Countdown({ onBack }: { onBack: () => void }) {
 
   return (
     <ViewShell title={DROP.title} accent="primary" onBack={onBack}>
-      <p className="mb-6 font-mono text-xs tracking-[0.3em] text-muted-foreground">
-        {`DROPS ${DROP.dateLabel}`}
-      </p>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-destructive/40 pb-5">
+        <p className="font-mono text-xs font-bold tracking-[0.3em] text-destructive">
+          {`DROPS ${DROP.dateLabel}`}
+        </p>
+        <span className="font-mono text-[10px] font-bold tracking-[0.35em] text-destructive">
+          LIMITED RELEASE
+        </span>
+      </div>
 
-      {/* timer */}
-      <div className="mb-10 min-h-[104px]">
+      {/* oversized release timer */}
+      <div className="mb-12 min-h-[150px]">
         {t?.done ? (
-          <p className="p3-menu-glow font-display text-6xl italic text-primary md:text-7xl">LIVE NOW</p>
+          <p className="p3-menu-glow font-display text-7xl italic text-destructive md:text-9xl">LIVE NOW</p>
         ) : t ? (
           <div className="flex flex-wrap gap-3 md:gap-4" role="timer">
             {t.parts.map(([label, value], i) => (
@@ -60,12 +65,12 @@ export function Countdown({ onBack }: { onBack: () => void }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2 + i * 0.06 }}
-                className="flex w-[76px] flex-col items-center border border-border bg-background/80 py-3 md:w-28"
+                className="flex min-w-[78px] flex-1 flex-col items-center border-2 border-destructive/70 bg-destructive/5 px-2 py-4 shadow-[0_0_28px_-12px_var(--color-destructive)] md:min-w-0 md:py-6"
               >
-                <span className="font-display text-5xl italic leading-none tabular-nums text-foreground md:text-7xl">
+                <span className="font-display text-6xl italic leading-none tabular-nums text-destructive md:text-8xl lg:text-9xl">
                   {String(value).padStart(2, '0')}
                 </span>
-                <span className="mt-2 font-mono text-[10px] tracking-[0.25em] text-primary">{label}</span>
+                <span className="mt-3 font-mono text-[10px] font-bold tracking-[0.25em] text-destructive md:text-xs">{label}</span>
               </motion.div>
             ))}
           </div>
@@ -78,17 +83,20 @@ export function Countdown({ onBack }: { onBack: () => void }) {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="relative aspect-[4/5] w-full overflow-hidden border border-border bg-muted"
+          className="group relative aspect-[4/5] w-full overflow-hidden border-2 border-destructive/50 bg-white shadow-[0_0_44px_-12px_var(--color-destructive)]"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={img}
             alt={DROP.title}
             onError={() => setImg('/placeholder.jpg')}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-contain p-2 transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
-          <div className="absolute left-0 top-0 bg-primary px-3 py-1 font-mono text-[11px] font-bold tracking-[0.2em] text-primary-foreground">
+          <div className="absolute left-0 top-0 bg-destructive px-4 py-2 font-mono text-[11px] font-bold tracking-[0.2em] text-destructive-foreground">
             COMING SOON
+          </div>
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent px-5 pb-5 pt-16">
+            <p className="font-mono text-xs font-bold tracking-[0.3em] text-white">BURBERRY PUFFER</p>
           </div>
         </motion.div>
 

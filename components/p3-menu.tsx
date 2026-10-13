@@ -60,6 +60,22 @@ export function P3Menu({
       {/* desktop-only auto-rotating product slideshow */}
       <ProductSlideshow items={items} onOpenArchive={() => onNavigate('archive')} />
 
+      {/* drop countdown tab — top center */}
+      <div className="pointer-events-none absolute inset-x-0 top-5 z-30 flex justify-center md:top-6">
+        <motion.button
+          type="button"
+          onClick={() => onNavigate('countdown')}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="pointer-events-auto relative flex items-center gap-2 bg-primary px-5 py-2.5 font-mono text-xs font-bold tracking-[0.25em] text-primary-foreground shadow-lg transition-colors hover:bg-foreground hover:text-background md:text-sm"
+          style={{ clipPath: 'polygon(4% 0, 100% 0, 96% 100%, 0 100%)' }}
+        >
+          <span className="size-2 animate-pulse rounded-full bg-current" aria-hidden />
+          PUFFER DROP COUNTDOWN
+        </motion.button>
+      </div>
+
       {/* menu list */}
       <nav
         className="relative z-20 flex flex-col gap-2 pl-6 md:gap-3 md:pl-24"

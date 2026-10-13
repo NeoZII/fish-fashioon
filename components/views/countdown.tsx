@@ -77,6 +77,24 @@ export function Countdown({ onBack }: { onBack: () => void }) {
         ) : null}
       </div>
 
+      {/* Signup CTA sits directly beneath the countdown on mobile and desktop. */}
+      <motion.a
+        href={DROP.ctaLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="relative mb-8 flex min-h-[108px] w-full items-center justify-between gap-5 overflow-hidden bg-primary px-6 py-6 text-primary-foreground shadow-[0_12px_32px_-18px_var(--color-primary)] transition-all duration-300 hover:bg-foreground hover:text-background md:min-h-[72px] md:px-6 md:py-5"
+      >
+        <span className="absolute -right-10 -top-10 size-28 rounded-full border border-current/20" aria-hidden />
+        <span className="absolute -bottom-14 -left-8 size-32 rounded-full border border-current/10" aria-hidden />
+        <span className="relative max-w-[17rem] font-mono text-xs font-bold uppercase leading-[1.9] tracking-[0.18em] sm:text-sm md:max-w-none md:leading-relaxed md:tracking-[0.15em]">
+          {DROP.ctaText}
+        </span>
+        <ArrowUpRight className="relative size-7 shrink-0 md:size-6" />
+      </motion.a>
+
       <div className="grid gap-8 md:grid-cols-2 md:items-start">
         {/* product image */}
         <motion.div
@@ -100,23 +118,6 @@ export function Countdown({ onBack }: { onBack: () => void }) {
           </div>
         </motion.div>
 
-        {/* CTA */}
-        <motion.a
-          href={DROP.ctaLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="relative flex min-h-[108px] w-full items-center justify-between gap-5 overflow-hidden bg-primary px-6 py-6 text-primary-foreground shadow-[0_12px_32px_-18px_var(--color-primary)] transition-all duration-300 hover:bg-foreground hover:text-background md:min-h-[72px] md:px-6 md:py-5"
-        >
-          <span className="absolute -right-10 -top-10 size-28 rounded-full border border-current/20" aria-hidden />
-          <span className="absolute -bottom-14 -left-8 size-32 rounded-full border border-current/10" aria-hidden />
-          <span className="relative max-w-[17rem] font-mono text-xs font-bold uppercase leading-[1.9] tracking-[0.18em] sm:text-sm md:max-w-none md:leading-relaxed md:tracking-[0.15em]">
-            {DROP.ctaText}
-          </span>
-          <ArrowUpRight className="relative size-7 shrink-0 md:size-6" />
-        </motion.a>
       </div>
     </ViewShell>
   )

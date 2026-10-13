@@ -60,25 +60,25 @@ export function P3Menu({
       {/* desktop-only auto-rotating product slideshow */}
       <ProductSlideshow items={items} onOpenArchive={() => onNavigate('archive')} />
 
-      {/* featured countdown release — responsive top-center CTA */}
-      <div className="pointer-events-none absolute inset-x-0 top-3 z-30 flex justify-center px-4 sm:top-5 md:top-6">
+      {/* drop countdown tab — top center */}
+      <div className="pointer-events-none absolute inset-x-0 top-5 z-30 flex justify-center md:top-6">
         <motion.button
           type="button"
           onClick={() => onNavigate('countdown')}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-auto relative flex min-h-12 w-full max-w-[min(92vw,34rem)] items-center justify-center gap-2.5 bg-destructive px-4 py-3 text-center font-mono text-[10px] font-bold tracking-[0.18em] text-destructive-foreground shadow-[0_0_30px_-8px_var(--color-destructive)] transition-all duration-300 hover:scale-[1.02] hover:bg-foreground hover:text-background hover:shadow-[0_0_38px_-6px_var(--color-destructive)] sm:px-6 sm:text-xs md:min-h-14 md:max-w-[38rem] md:text-sm md:tracking-[0.25em]"
-          style={{ clipPath: 'polygon(2% 0, 100% 0, 98% 100%, 0 100%)' }}
+          className="pointer-events-auto relative flex items-center gap-2 bg-primary px-5 py-2.5 font-mono text-xs font-bold tracking-[0.25em] text-primary-foreground shadow-lg transition-colors hover:bg-foreground hover:text-background md:text-sm"
+          style={{ clipPath: 'polygon(4% 0, 100% 0, 96% 100%, 0 100%)' }}
         >
-          <span className="size-2 shrink-0 animate-pulse rounded-full bg-current" aria-hidden />
-          <span>BURBERRY PUFFER COUNTDOWN</span>
+          <span className="size-2 animate-pulse rounded-full bg-current" aria-hidden />
+          PUFFER DROP COUNTDOWN
         </motion.button>
       </div>
 
       {/* menu list */}
       <nav
-        className="relative z-20 flex w-full max-w-[calc(100vw-2rem)] flex-col gap-1.5 px-4 pt-16 sm:gap-2 sm:pl-8 md:w-auto md:max-w-none md:gap-3 md:pl-24 md:pt-0"
+        className="relative z-20 flex flex-col gap-2 pl-6 md:gap-3 md:pl-24"
         aria-label="Main menu"
       >
         {MENU_ITEMS.map((item, i) => {
@@ -144,7 +144,7 @@ export function P3Menu({
                   style={{
                     // Scales down on phones (vw-driven), capped at the original
                     // desktop size (fontSize/16rem) so PC sizing is unchanged.
-                    fontSize: `clamp(1.35rem, ${(item.fontSize / 11).toFixed(1)}vw, ${item.fontSize / 20}rem)`,
+                    fontSize: `clamp(1.75rem, ${(item.fontSize / 8).toFixed(1)}vw, ${item.fontSize / 16}rem)`,
                     ...(item.glowRed && !isActive
                       ? { textShadow: '0 0 18px color-mix(in oklch, var(--primary) 80%, transparent)' }
                       : {}),

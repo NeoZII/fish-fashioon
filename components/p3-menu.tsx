@@ -37,11 +37,9 @@ export function P3Menu({
   return (
     <div className="relative flex min-h-dvh w-full items-center overflow-hidden">
       {/* moving diagonal stripes */}
-      <div className="p3-stripes pointer-events-none absolute inset-0 opacity-40 md:opacity-70" />
-      {/* Floating shapes add visual depth on larger screens without competing with the mobile menu. */}
-      <div className="hidden md:block">
-        <FloatingShapes />
-      </div>
+      <div className="p3-stripes pointer-events-none absolute inset-0 opacity-70" />
+      {/* floating geometric shapes */}
+      <FloatingShapes />
 
       {/* right vertical accent bar */}
       <div className="pointer-events-none absolute inset-y-0 right-0 flex">
@@ -53,10 +51,10 @@ export function P3Menu({
       <motion.div
         initial={{ opacity: 0, x: -40, rotate: 14 }}
         animate={{ opacity: 1, x: 0, rotate: 16 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="pointer-events-none absolute left-3 top-3 z-0 flex origin-top-left flex-col font-display italic leading-[0.82] text-foreground/5 md:left-8 md:top-6"
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="pointer-events-none absolute left-4 top-6 z-0 flex origin-top-left flex-col font-display italic leading-[0.82] text-foreground/5 md:left-8"
       >
-        <span className="text-[12vw] md:text-[9vw]">FashionSea</span>
+        <span className="text-[16vw] md:text-[9vw]">FashionSea</span>
       </motion.div>
 
       {/* desktop-only auto-rotating product slideshow */}
@@ -69,8 +67,8 @@ export function P3Menu({
           onClick={() => onNavigate('countdown')}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-auto relative flex min-h-12 w-full max-w-[min(90vw,34rem)] items-center justify-center gap-2.5 bg-destructive px-4 py-3 text-center font-mono text-[10px] font-bold tracking-[0.18em] text-destructive-foreground shadow-[0_0_30px_-8px_var(--color-destructive)] transition-all duration-300 hover:scale-[1.02] hover:bg-foreground hover:text-background hover:shadow-[0_0_38px_-6px_var(--color-destructive)] sm:px-6 sm:text-xs md:min-h-14 md:max-w-[38rem] md:text-sm md:tracking-[0.25em]"
+          transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="pointer-events-auto relative flex min-h-12 w-full max-w-[min(92vw,34rem)] items-center justify-center gap-2.5 bg-destructive px-4 py-3 text-center font-mono text-[10px] font-bold tracking-[0.18em] text-destructive-foreground shadow-[0_0_30px_-8px_var(--color-destructive)] transition-all duration-300 hover:scale-[1.02] hover:bg-foreground hover:text-background hover:shadow-[0_0_38px_-6px_var(--color-destructive)] sm:px-6 sm:text-xs md:min-h-14 md:max-w-[38rem] md:text-sm md:tracking-[0.25em]"
           style={{ clipPath: 'polygon(2% 0, 100% 0, 98% 100%, 0 100%)' }}
         >
           <span className="size-2 shrink-0 animate-pulse rounded-full bg-current" aria-hidden />
@@ -80,7 +78,7 @@ export function P3Menu({
 
       {/* menu list */}
       <nav
-        className="relative z-20 flex w-full max-w-[calc(100vw-1.5rem)] flex-col gap-1 px-3 pt-14 sm:gap-2 sm:pl-8 md:w-auto md:max-w-none md:gap-3 md:pl-24 md:pt-0"
+        className="relative z-20 flex w-full max-w-[calc(100vw-2rem)] flex-col gap-1.5 px-4 pt-16 sm:gap-2 sm:pl-8 md:w-auto md:max-w-none md:gap-3 md:pl-24 md:pt-0"
         aria-label="Main menu"
       >
         {MENU_ITEMS.map((item, i) => {
@@ -94,7 +92,7 @@ export function P3Menu({
               animate={{ opacity: isActive ? 1 : 0.45, x: 0 }}
               transition={{
                 opacity: { duration: 0.35 },
-                x: { duration: 0.35, delay: 0.1 + i * 0.045, ease: [0.22, 1, 0.36, 1] },
+                x: { duration: 0.5, delay: 0.4 + i * 0.09, ease: [0.22, 1, 0.36, 1] },
               }}
               onMouseEnter={() => setActive(i)}
               onFocus={() => setActive(i)}
@@ -146,7 +144,7 @@ export function P3Menu({
                   style={{
                     // Scales down on phones (vw-driven), capped at the original
                     // desktop size (fontSize/16rem) so PC sizing is unchanged.
-                    fontSize: `clamp(1.15rem, ${(item.fontSize / 13).toFixed(1)}vw, ${item.fontSize / 22}rem)`,
+                    fontSize: `clamp(1.35rem, ${(item.fontSize / 11).toFixed(1)}vw, ${item.fontSize / 20}rem)`,
                     ...(item.glowRed && !isActive
                       ? { textShadow: '0 0 18px color-mix(in oklch, var(--primary) 80%, transparent)' }
                       : {}),

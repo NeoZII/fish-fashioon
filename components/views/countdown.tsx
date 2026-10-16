@@ -13,8 +13,11 @@ const DROP = {
   dateLabel: 'FRIDAY 16 OCT · 20:00',
   // Upload your photo to /public/drops/countdown.jpg (falls back to a placeholder)
   image: '/drops/countdown.png',
-  ctaText: 'CREATE AN ACCOUNT TO BE ABLE TO BUY WHEN IT DROPS',
-  ctaLink: 'https://ikako.vip/r/dqh2u',
+  links: [
+    { label: 'BURBERRY PUFFER IN BLACK', href: '#' },
+    { label: 'BURBERRY PUFFER IN WHITE', href: '#' },
+    { label: 'BURBERRY PUFFER IN PURPLE', href: '#' },
+  ],
 }
 // ---------------------------------------------------------------------------
 
@@ -77,23 +80,27 @@ export function Countdown({ onBack }: { onBack: () => void }) {
         ) : null}
       </div>
 
-      {/* Signup CTA sits directly beneath the countdown on mobile and desktop. */}
-      <motion.a
-        href={DROP.ctaLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-        className="relative mb-8 flex min-h-[108px] w-full items-center justify-between gap-5 overflow-hidden bg-primary px-6 py-6 text-primary-foreground shadow-[0_12px_32px_-18px_var(--color-primary)] transition-all duration-300 hover:bg-foreground hover:text-background md:min-h-[72px] md:px-6 md:py-5"
-      >
-        <span className="absolute -right-10 -top-10 size-28 rounded-full border border-current/20" aria-hidden />
-        <span className="absolute -bottom-14 -left-8 size-32 rounded-full border border-current/10" aria-hidden />
-        <span className="relative max-w-[17rem] font-mono text-xs font-bold uppercase leading-[1.9] tracking-[0.18em] sm:text-sm md:max-w-none md:leading-relaxed md:tracking-[0.15em]">
-          {DROP.ctaText}
-        </span>
-        <ArrowUpRight className="relative size-7 shrink-0 md:size-6" />
-      </motion.a>
+      {/* Product links sit directly beneath the countdown. */}
+      <div className="mb-8 grid gap-3 md:grid-cols-3">
+        {DROP.links.map((link, i) => (
+          <motion.a
+            key={link.label}
+            href={link.href}
+            target={link.href !== '#' ? '_blank' : undefined}
+            rel={link.href !== '#' ? 'noopener noreferrer' : undefined}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 + i * 0.08 }}
+            className="group relative flex min-h-[82px] items-center justify-between gap-4 overflow-hidden bg-primary px-5 py-5 text-primary-foreground shadow-[0_12px_32px_-18px_var(--color-primary)] transition-all duration-300 hover:bg-foreground hover:text-background md:min-h-[96px] md:px-6"
+          >
+            <span className="absolute -right-10 -top-10 size-28 rounded-full border border-current/20" aria-hidden />
+            <span className="relative max-w-[15rem] font-mono text-xs font-bold uppercase leading-[1.8] tracking-[0.15em]">
+              {link.label}
+            </span>
+            <ArrowUpRight className="relative size-6 shrink-0 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+          </motion.a>
+        ))}
+      </div>
 
       <div className="grid gap-8 md:grid-cols-2 md:items-start">
         {/* product image */}

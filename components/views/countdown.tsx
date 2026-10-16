@@ -7,7 +7,7 @@ import { ViewShell } from '@/components/view-shell'
 
 // ---- Edit the drop here ----------------------------------------------------
 const DROP = {
-  title: 'BURBERRY PUFFER COUNTDOWN',
+  title: 'BURBERRY PUFFER LINKS',
   // Friday 16 Oct 2026, 20:00 Brussels time (CEST = UTC+2)
   dropAt: '2026-10-16T20:00:00+02:00',
   dateLabel: 'FRIDAY 16 OCT · 20:00',

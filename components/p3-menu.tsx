@@ -76,7 +76,7 @@ export function P3Menu({
           <span className="relative flex size-2.5 shrink-0 items-center justify-center rounded-full bg-current" aria-hidden>
             <span className="size-1 rounded-full bg-destructive-foreground" />
           </span>
-          <span className="relative">BURBERRY PUFFER COUNTDOWN</span>
+          <span className="relative">BURBERRY PUFFER LINKS</span>
         </motion.button>
       </div>
 

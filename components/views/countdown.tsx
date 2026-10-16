@@ -15,7 +15,7 @@ const DROP = {
   image: '/drops/countdown.png',
   links: [
     { label: 'BURBERRY PUFFER IN BLACK', href: 'https://ikako.vip/muh3c' },
-    { label: 'BURBERRY PUFFER IN WHITE', href: '#' },
+    { label: 'BURBERRY PUFFER IN WHITE', href: 'https://ikako.vip/xchep' },
     { label: 'BURBERRY PUFFER IN PURPLE', href: 'https://ikako.vip/nxpbx' },
   ],
 }

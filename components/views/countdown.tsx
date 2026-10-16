@@ -14,9 +14,9 @@ const DROP = {
   // Upload your photo to /public/drops/countdown.jpg (falls back to a placeholder)
   image: '/drops/countdown.png',
   links: [
-    { label: 'BURBERRY PUFFER IN BLACK', href: '#' },
+    { label: 'BURBERRY PUFFER IN BLACK', href: 'https://ikako.vip/muh3c' },
     { label: 'BURBERRY PUFFER IN WHITE', href: '#' },
-    { label: 'BURBERRY PUFFER IN PURPLE', href: '#' },
+    { label: 'BURBERRY PUFFER IN PURPLE', href: 'https://ikako.vip/nxpbx' },
   ],
 }
 // ---------------------------------------------------------------------------

@@ -11,7 +11,11 @@ export function ViewShell({
   toolbar,
   children,
 }: {
+  /** Menu position (e.g. "02"); accepted for compatibility, not rendered. */
+  index?: string
   title: string
+  /** Menu sub-label (e.g. "THE GALLERY"); accepted for compatibility, not rendered. */
+  subtitle?: string
   accent?: 'primary' | 'secondary'
   onBack: () => void
   toolbar?: ReactNode

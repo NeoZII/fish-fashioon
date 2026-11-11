@@ -98,24 +98,47 @@ export const CATEGORIES = [
   'HOODIES',
   'ZIP-UPS',
   'JACKETS',
+  'COATS',
   'SWEATS',
+  'SWEATERS',
   'T-SHIRTS',
   'LONGSLEEVES',
   'TANKTOPS',
   'SHIRTS',
   'JERSEYS',
+  'SETS',
   'SHOES',
   'BOOTS',
   'SLIDES',
   'MERCH',
   'ACCESSORIES',
   'CAPS',
+  'HATS',
+  'SCARVES',
+  'GLOVES',
   'BELTS',
   'BAGS',
   'BACKPACKS',
   'JEWELLERY',
+  'TECH',
   'FIGURINES',
 ] as const
+
+/**
+ * Category chips for a set of items: "ALL" first, then every category that
+ * actually has items, in the canonical CATEGORIES order. Categories that exist
+ * in the sheet but aren't in CATEGORIES yet are appended alphabetically, so a
+ * new category can never be unreachable, and empty chips never show.
+ */
+export function categoryFilters(items: Product[]): string[] {
+  const present = new Set(items.map((i) => i.category).filter(Boolean))
+  const known = CATEGORIES.filter((c) => c !== 'ALL' && present.has(c))
+  const knownSet = new Set<string>(known)
+  const extras = Array.from(present)
+    .filter((c) => !knownSet.has(c))
+    .sort((a, b) => a.localeCompare(b))
+  return ['ALL', ...known, ...extras]
+}
 
 /**
  * Case-insensitive live-search match. Checks the title/name plus brand and

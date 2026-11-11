@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
-import { sellerFilters, CATEGORIES, matchesQuery, type Product } from '@/lib/data'
+import { sellerFilters, categoryFilters, matchesQuery, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
 import { FilterBar } from '@/components/filter-bar'
 import { SearchBar } from '@/components/search-bar'
@@ -16,6 +16,7 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
   const withSeller = useMemo(() => items.filter((i) => i.seller.trim() !== ''), [items])
 
   const options = useMemo(() => sellerFilters(withSeller), [withSeller])
+  const categories = useMemo(() => categoryFilters(withSeller), [withSeller])
 
   const filtered = useMemo(() => {
     return withSeller.filter(
@@ -41,7 +42,7 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
           <FilterBar label="SELLER" options={options} active={seller} onChange={setSeller} accent="primary" />
           <FilterBar
             label="CATEGORY"
-            options={[...CATEGORIES]}
+            options={categories}
             active={category}
             onChange={setCategory}
             accent="primary"

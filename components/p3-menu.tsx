@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
 import { MENU_ITEMS, recentItems, type MenuItem, type Product } from '@/lib/data'
 import { ProductSlideshow } from '@/components/product-slideshow'
+import { useFavourites } from '@/lib/favourites'
 
 export function P3Menu({
   onNavigate,
@@ -15,6 +16,7 @@ export function P3Menu({
   const [active, setActive] = useState(0)
   // Live "NEW" counter for Latest Drops; appears once the catalogue has loaded.
   const newCount = useMemo(() => recentItems(items).length, [items])
+  const { count: favCount } = useFavourites()
 
   const move = useCallback((dir: number) => {
     setActive((prev) => Math.min(MENU_ITEMS.length - 1, Math.max(0, prev + dir)))
@@ -104,7 +106,11 @@ export function P3Menu({
               onFocus={() => setActive(i)}
               onClick={() => onNavigate(item.id)}
               aria-label={
-                item.id === 'drops' && newCount > 0 ? `${item.label}, ${newCount} new this week` : item.label
+                item.id === 'drops' && newCount > 0
+                  ? `${item.label}, ${newCount} new this week`
+                  : item.id === 'favourites' && favCount > 0
+                    ? `${item.label}, ${favCount} saved`
+                    : item.label
               }
               style={{ marginLeft: item.offsetX }}
               className="group relative flex items-center gap-4 text-left outline-none"
@@ -162,6 +168,20 @@ export function P3Menu({
                   {item.label}
                 </span>
               </span>
+
+              {/* saved-items counter on My Favourites */}
+              {item.id === 'favourites' && favCount > 0 && (
+                <motion.span
+                  aria-hidden
+                  initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
+                  animate={{ opacity: 1, scale: 1, rotate: -8 }}
+                  transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
+                  className="shrink-0 self-start bg-secondary px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.18em] text-secondary-foreground md:text-xs"
+                  style={{ clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)' }}
+                >
+                  ♥ {favCount}
+                </motion.span>
+              )}
 
               {/* live NEW counter on Latest Drops */}
               {item.id === 'drops' && newCount > 0 && (

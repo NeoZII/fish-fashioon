@@ -1,14 +1,16 @@
 import type { MetadataRoute } from 'next'
 import { getCatalogue } from '@/lib/catalogue'
 import { itemPath } from '@/lib/item-key'
-import { VIEW_PATHS } from '@/lib/sections'
+import { PRIVATE_PATHS, VIEW_PATHS } from '@/lib/sections'
 import { SITE_URL } from '@/lib/site'
 
 // Rebuilt hourly so new finds become discoverable by search engines.
 export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const sections: MetadataRoute.Sitemap = Object.values(VIEW_PATHS).map((path) => ({
+  const sections: MetadataRoute.Sitemap = Object.values(VIEW_PATHS)
+    .filter((path) => !PRIVATE_PATHS.has(path))
+    .map((path) => ({
     url: `${SITE_URL}${path === '/' ? '' : path}`,
     changeFrequency: 'daily',
     priority: path === '/' ? 1 : 0.8,

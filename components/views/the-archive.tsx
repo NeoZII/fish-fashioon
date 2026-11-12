@@ -1,9 +1,11 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
-import { categoryFilters, brandFilters, matchesQuery, type Product } from '@/lib/data'
+import { categoryFilters, brandFilters, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
+import { searchItems } from '@/lib/search'
 import { FilterBar } from '@/components/filter-bar'
+import { MobileFilters } from '@/components/mobile-filters'
 import { SearchBar } from '@/components/search-bar'
 import { ProductGrid } from '@/components/product-grid'
 
@@ -15,12 +17,13 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
   const brands = useMemo(() => brandFilters(items), [items])
   const categories = useMemo(() => categoryFilters(items), [items])
 
+  // Search the whole catalogue first (its index is cached), best match first,
+  // then apply the category/brand filters.
   const filtered = useMemo(() => {
-    return items.filter(
+    return searchItems(items, query).filter(
       (i) =>
         (category === 'ALL' || i.category === category) &&
-        (brand === 'ALL' || i.brand === brand) &&
-        matchesQuery(i, query),
+        (brand === 'ALL' || i.brand === brand),
     )
   }, [items, category, brand, query])
 
@@ -36,19 +39,29 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
       toolbar={
         <div className="flex flex-col divide-y divide-border">
           <SearchBar onChange={handleSearch} accent="secondary" />
-          <FilterBar
-            label="CATEGORY"
-            options={categories}
-            active={category}
-            onChange={setCategory}
+          <div className="hidden flex-col divide-y divide-border md:flex">
+            <FilterBar
+              label="CATEGORY"
+              options={categories}
+              active={category}
+              onChange={setCategory}
+              accent="secondary"
+            />
+            <FilterBar
+              label="BRAND"
+              options={brands}
+              active={brand}
+              onChange={setBrand}
+              accent="secondary"
+            />
+          </div>
+          <MobileFilters
             accent="secondary"
-          />
-          <FilterBar
-            label="BRAND"
-            options={brands}
-            active={brand}
-            onChange={setBrand}
-            accent="secondary"
+            resultCount={filtered.length}
+            groups={[
+              { id: 'category', label: 'CATEGORY', options: categories, active: category, onChange: setCategory },
+              { id: 'brand', label: 'BRAND', options: brands, active: brand, onChange: setBrand, searchable: true },
+            ]}
           />
         </div>
       }
@@ -64,7 +77,9 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
       <ProductGrid
         items={filtered}
         accent="secondary"
-        showShuffle
+        // While searching, keep best-match order instead of shuffling.
+        shuffleItems={!query}
+        showShuffle={!query}
         emptyMessage={query ? 'NO ITEMS FOUND' : 'NOTHING IN THIS DRAWER YET'}
       />
     </ViewShell>

@@ -10,6 +10,8 @@ import { parsePrice } from '@/lib/price'
 import { ProductImage } from '@/components/product-image'
 import { ShareButton } from '@/components/share-button'
 import { isLandingPage } from '@/components/landing-tracker'
+import { FavouriteButton } from '@/components/favourite-button'
+import { FavouritesLink } from '@/components/favourites-link'
 
 export function ItemView({
   item,
@@ -46,12 +48,15 @@ export function ItemView({
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
             BACK
           </button>
-          <Link
-            href="/"
-            className="font-display text-xl italic tracking-wide text-foreground/80 transition-colors hover:text-foreground"
-          >
-            FashionSea
-          </Link>
+          <div className="flex items-center gap-3">
+            <FavouritesLink />
+            <Link
+              href="/"
+              className="font-display text-xl italic tracking-wide text-foreground/80 transition-colors hover:text-foreground"
+            >
+              FashionSea
+            </Link>
+          </div>
         </header>
       </div>
 
@@ -119,6 +124,7 @@ export function ItemView({
                 BUY ON KAKOBUY
                 <ArrowUpRight className="size-4" />
               </a>
+              <FavouriteButton itemKey={item.key} title={item.title} variant="large" />
               <ShareButton url={shareUrl} title={item.title} text={shareText} previewImage={`${itemPath(item)}/opengraph-image`} />
             </div>
 

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { categoryFilters, brandFilters, recentItems, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
 import { FilterBar } from '@/components/filter-bar'
+import { MobileFilters } from '@/components/mobile-filters'
 import { ProductGrid } from '@/components/product-grid'
 
 export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () => void }) {
@@ -34,19 +35,29 @@ export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () =>
       onBack={onBack}
       toolbar={
         <div className="flex flex-col divide-y divide-border">
-          <FilterBar
-            label="CATEGORY"
-            options={categories}
-            active={category}
-            onChange={setCategory}
+          <div className="hidden flex-col divide-y divide-border md:flex">
+            <FilterBar
+              label="CATEGORY"
+              options={categories}
+              active={category}
+              onChange={setCategory}
+              accent="primary"
+            />
+            <FilterBar
+              label="BRAND"
+              options={brands}
+              active={brand}
+              onChange={setBrand}
+              accent="primary"
+            />
+          </div>
+          <MobileFilters
             accent="primary"
-          />
-          <FilterBar
-            label="BRAND"
-            options={brands}
-            active={brand}
-            onChange={setBrand}
-            accent="primary"
+            resultCount={latest.length}
+            groups={[
+              { id: 'category', label: 'CATEGORY', options: categories, active: category, onChange: setCategory },
+              { id: 'brand', label: 'BRAND', options: brands, active: brand, onChange: setBrand, searchable: true },
+            ]}
           />
         </div>
       }

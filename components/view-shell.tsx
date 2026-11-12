@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { ShareButton } from '@/components/share-button'
+import { FavouritesLink } from '@/components/favourites-link'
 
 export function ViewShell({
   title,
@@ -11,6 +12,7 @@ export function ViewShell({
   onBack,
   toolbar,
   children,
+  hideFavouritesLink = false,
 }: {
   /** Menu position (e.g. "02"); accepted for compatibility, not rendered. */
   index?: string
@@ -21,6 +23,8 @@ export function ViewShell({
   onBack: () => void
   toolbar?: ReactNode
   children: ReactNode
+  /** Hide the header heart shortcut (on the Favourites page itself). */
+  hideFavouritesLink?: boolean
 }) {
   const barClass = accent === 'primary' ? 'bg-primary' : 'bg-secondary'
 
@@ -39,7 +43,11 @@ export function ViewShell({
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
             MENU
           </button>
-          <ShareButton title={`${title} · Fashion Sea`} align="right" />
+          <div className="flex items-center gap-2">
+            {/* Favourites are per-browser, so that page has no shortcut or share. */}
+            {!hideFavouritesLink && <FavouritesLink />}
+            {!hideFavouritesLink && <ShareButton title={`${title} · Fashion Sea`} align="right" />}
+          </div>
         </header>
         {toolbar ? <div className="border-t border-border">{toolbar}</div> : null}
       </div>

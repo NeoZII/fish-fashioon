@@ -1,9 +1,11 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
-import { sellerFilters, categoryFilters, matchesQuery, type Product } from '@/lib/data'
+import { sellerFilters, categoryFilters, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
+import { searchItems } from '@/lib/search'
 import { FilterBar } from '@/components/filter-bar'
+import { MobileFilters } from '@/components/mobile-filters'
 import { SearchBar } from '@/components/search-bar'
 import { ProductGrid } from '@/components/product-grid'
 
@@ -19,11 +21,10 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
   const categories = useMemo(() => categoryFilters(withSeller), [withSeller])
 
   const filtered = useMemo(() => {
-    return withSeller.filter(
+    return searchItems(withSeller, query).filter(
       (i) =>
         (seller === 'ALL' || i.seller === seller) &&
-        (category === 'ALL' || i.category === category) &&
-        matchesQuery(i, query),
+        (category === 'ALL' || i.category === category),
     )
   }, [withSeller, seller, category, query])
 
@@ -39,13 +40,23 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
       toolbar={
         <div className="flex flex-col divide-y divide-border">
           <SearchBar onChange={handleSearch} accent="primary" />
-          <FilterBar label="SELLER" options={options} active={seller} onChange={setSeller} accent="primary" />
-          <FilterBar
-            label="CATEGORY"
-            options={categories}
-            active={category}
-            onChange={setCategory}
+          <div className="hidden flex-col divide-y divide-border md:flex">
+            <FilterBar label="SELLER" options={options} active={seller} onChange={setSeller} accent="primary" />
+            <FilterBar
+              label="CATEGORY"
+              options={categories}
+              active={category}
+              onChange={setCategory}
+              accent="primary"
+            />
+          </div>
+          <MobileFilters
             accent="primary"
+            resultCount={filtered.length}
+            groups={[
+              { id: 'seller', label: 'SELLER', options: options, active: seller, onChange: setSeller, searchable: true },
+              { id: 'category', label: 'CATEGORY', options: categories, active: category, onChange: setCategory },
+            ]}
           />
         </div>
       }
@@ -61,6 +72,7 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
       <ProductGrid
         items={filtered}
         accent="primary"
+        shuffleItems={!query}
         emptyMessage={query ? 'NO ITEMS FOUND' : 'NOTHING IN THIS DRAWER YET'}
       />
     </ViewShell>

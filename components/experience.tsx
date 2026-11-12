@@ -14,6 +14,8 @@ import { Sellers } from '@/components/views/sellers'
 import { Manifesto } from '@/components/views/manifesto'
 import { Socials } from '@/components/views/socials'
 import { Countdown } from '@/components/views/countdown'
+import { Favourites } from '@/components/views/favourites'
+import { NavContext } from '@/components/nav-context'
 
 export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
   const { globalItems, loading } = useGlobalItems()
@@ -67,6 +69,7 @@ export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
   const back = useCallback(() => navigate('menu'), [navigate])
 
   return (
+    <NavContext.Provider value={navigate}>
     <div className="relative min-h-dvh bg-background">
       <PromoModal />
       <TransitionCurtain show={curtain} />
@@ -78,7 +81,11 @@ export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
         {view === 'manifesto' && <Manifesto onBack={back} />}
         {view === 'socials' && <Socials onBack={back} />}
         {view === 'countdown' && <Countdown onBack={back} />}
+        {view === 'favourites' && (
+          <Favourites items={globalItems} loading={loading} onBack={back} onNavigate={navigate} />
+        )}
       </div>
     </div>
+    </NavContext.Provider>
   )
 }

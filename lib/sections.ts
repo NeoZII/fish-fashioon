@@ -9,6 +9,7 @@ export const VIEW_PATHS: Record<ViewId, string> = {
   manifesto: '/how-to-buy',
   socials: '/socials',
   countdown: '/burberry',
+  favourites: '/favourites',
 }
 
 /** Section slugs that get their own page (everything except the menu). */
@@ -48,4 +49,11 @@ export const SECTION_META: Record<Exclude<ViewId, 'menu'>, { title: string; desc
     title: 'Burberry Puffer Links',
     description: 'Burberry puffer links in black, white and purple.',
   },
+  favourites: {
+    title: 'My Favourites',
+    description: 'Your saved Fashion Sea finds. Tap the heart on any item to save it here.',
+  },
 }
+
+/** Personal pages that search engines shouldn't index. */
+export const PRIVATE_PATHS = new Set(['/favourites'])

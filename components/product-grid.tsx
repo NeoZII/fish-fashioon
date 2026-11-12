@@ -5,6 +5,9 @@ import { ArrowUpRight, Check, Flag, Shuffle, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Product } from '@/lib/data'
 import { ProductImage } from '@/components/product-image'
+import { parsePrice } from '@/lib/price'
+import Link from 'next/link'
+import { itemPath } from '@/lib/item-key'
 
 const BATCH_SIZE = 16
 
@@ -12,28 +15,6 @@ const REPORT_ENDPOINT =
   'https://script.google.com/macros/s/AKfycbx9v3aqzotQmh3zlbD6oVh0xdwcoiDt6Z5qzzM7L1ZLABQSNUhAbWZgJooCnRG8hN5w/exec'
 
 type ReportReason = 'Dead link' | 'Out of stock'
-
-/**
- * Split a raw price string into a primary USD value and an optional
- * secondary JPY value. Handles single-currency strings ("$180") as well
- * as combined feeds like "$37.00 , ¥ 240,50" (comma = decimal separator).
- */
-function parsePrice(raw: string): { usd: string; jpy: string | null } {
-  const usdMatch = raw.match(/\$\s*[\d.,]+/)
-  const jpyMatch = raw.match(/[¥￥]\s*[\d.,]+/)
-
-  const usd = usdMatch ? usdMatch[0].replace(/\s+/g, '') : raw.trim()
-
-  let jpy: string | null = null
-  if (jpyMatch) {
-    let num = jpyMatch[0].replace(/[¥￥\s]/g, '')
-    // "240,50" -> comma is a decimal separator when only 1–2 trailing digits.
-    if (/,\d{1,2}$/.test(num)) num = num.replace(',', '.')
-    jpy = `¥${num}`
-  }
-
-  return { usd, jpy }
-}
 
 const SHUFFLE_SEED_KEY = 'catalog-shuffle-seed'
 
@@ -301,16 +282,22 @@ function ProductCard({
         className="group flex h-full flex-col overflow-hidden rounded-md border border-border bg-card"
       >
         <div className="relative aspect-[4/5] overflow-hidden">
+          <Link
+            href={itemPath(product)}
+            prefetch={false}
+            aria-label={`View ${product.title}`}
+            className="absolute inset-0 z-0"
+          />
           <ProductImage
             src={product.image}
             alt={product.title}
             // First row loads immediately; the rest only as they scroll into view.
             loading={index < 4 ? 'eager' : 'lazy'}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent" />
           <span
-            className={`absolute left-2 top-2 skew-x-[-8deg] px-2 py-0.5 font-mono text-[9px] font-bold tracking-[0.2em] ${tagClass}`}
+            className={`pointer-events-none absolute left-2 top-2 skew-x-[-8deg] px-2 py-0.5 font-mono text-[9px] font-bold tracking-[0.2em] ${tagClass}`}
           >
             {product.category}
           </span>
@@ -319,7 +306,7 @@ function ProductCard({
             onClick={onReport}
             aria-label={`Report ${product.title}`}
             title="Report this item"
-            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/55 text-white/70 transition-colors hover:bg-black/75 hover:text-white"
+            className="absolute right-2 top-2 z-10 flex size-7 items-center justify-center rounded-full bg-black/55 text-white/70 transition-colors hover:bg-black/75 hover:text-white"
           >
             <Flag className="size-3.5" />
           </button>
@@ -330,16 +317,18 @@ function ProductCard({
             {product.brand}
           </span>
           <h3 className="font-display text-base italic leading-tight tracking-wide text-foreground text-balance">
-            {product.title}
+            <Link href={itemPath(product)} prefetch={false} className="hover:text-primary">
+              {product.title}
+            </Link>
           </h3>
           <div className="mt-auto flex items-end justify-between gap-2 pt-3">
             <div className="flex min-w-0 flex-1 flex-col leading-none">
               <span className={`truncate font-mono text-sm font-semibold tabular-nums sm:text-base ${priceClass}`}>
                 {price.usd}
               </span>
-              {price.jpy && (
+              {price.cny && (
                 <span className="mt-1 truncate font-mono text-[11px] tabular-nums text-muted-foreground">
-                  {price.jpy}
+                  {price.cny}
                 </span>
               )}
             </div>

@@ -55,7 +55,7 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
     >
       <div className="mb-8 flex items-end justify-between gap-4">
         <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-          {'Every Item Catalogued, 4000+ Items and MORE Daily.'}
+          {`Every item catalogued: ${items.length.toLocaleString('en-US')} finds and more added daily.`}
         </p>
         <span className="shrink-0 font-mono text-xs tabular-nums text-secondary">
           {String(filtered.length).padStart(2, '0')} ITEMS

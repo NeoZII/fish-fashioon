@@ -88,6 +88,8 @@ export type Product = {
   price: string
   seller: string
   date_added: string
+  /** Stable shareable key (hash of link + title), see lib/item-key.ts. */
+  key: string
 }
 
 export const CATEGORIES = [

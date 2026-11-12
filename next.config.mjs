@@ -7,6 +7,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Fonts read from disk by the share-preview image routes.
+  outputFileTracingIncludes: {
+    '/item/**': ['./assets/fonts/**'],
+  },
 }
 
 export default nextConfig

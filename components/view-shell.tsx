@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { ShareButton } from '@/components/share-button'
 
 export function ViewShell({
   title,
@@ -38,6 +39,7 @@ export function ViewShell({
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
             MENU
           </button>
+          <ShareButton title={`${title} · Fashion Sea`} />
         </header>
         {toolbar ? <div className="border-t border-border">{toolbar}</div> : null}
       </div>

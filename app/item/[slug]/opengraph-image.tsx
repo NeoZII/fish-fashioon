@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { ImageResponse } from 'next/og'
+import sharp from 'sharp'
 import { findItemBySlug } from '@/lib/item-lookup'
 import { loadOgPhoto } from '@/lib/og-photo'
 import { parsePrice } from '@/lib/price'
@@ -8,7 +9,9 @@ import { parsePrice } from '@/lib/price'
 // Share-preview card for one item (WhatsApp, Discord, iMessage, Telegram, X,
 // Reddit, Facebook, Instagram DMs… all read the og:image tag).
 export const size = { width: 1200, height: 630 }
-export const contentType = 'image/png'
+// JPEG keeps cards ~60–120 KB; WhatsApp drops previews much over ~300 KB,
+// and a photo-heavy PNG was ~500 KB.
+export const contentType = 'image/jpeg'
 export const alt = 'Fashion Sea find'
 // Build each card once, then serve it from Vercel's cache (refreshed every
 // 10 min). Without this the card was regenerated on every request (3–4 s),
@@ -52,7 +55,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const usd = /\d/.test(price.usd) ? price.usd : ''
   const photo = item ? await loadOgPhoto(item.image) : null
 
-  return new ImageResponse(
+  const png = new ImageResponse(
     (
       <div style={{ width: 1200, height: 630, display: 'flex', background: BG }}>
         {/* photo */}
@@ -179,4 +182,12 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       ],
     },
   )
+
+  const jpeg = await sharp(Buffer.from(await png.arrayBuffer()))
+    .jpeg({ quality: 82, mozjpeg: true })
+    .toBuffer()
+
+  return new Response(new Uint8Array(jpeg), {
+    headers: { 'Content-Type': 'image/jpeg' },
+  })
 }

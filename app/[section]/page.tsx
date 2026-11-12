@@ -4,7 +4,7 @@ import { preload } from 'react-dom'
 import { Experience } from '@/components/experience'
 import type { ViewId } from '@/lib/data'
 import { CATALOGUE_ENDPOINT } from '@/lib/catalogue-endpoint'
-import { SECTION_META, SECTION_SLUGS, VIEW_PATHS, viewFromPath } from '@/lib/sections'
+import { PRIVATE_PATHS, SECTION_META, SECTION_SLUGS, VIEW_PATHS, viewFromPath } from '@/lib/sections'
 import { SITE_NAME } from '@/lib/site'
 
 // One static page per section (/latest, /all, /sellers, /how-to-buy, /socials,
@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description: meta.description,
     alternates: { canonical: VIEW_PATHS[view] },
+    ...(PRIVATE_PATHS.has(VIEW_PATHS[view]) ? { robots: { index: false, follow: true } } : {}),
     // Child metadata replaces the parent's openGraph object, so restate the
     // site-wide preview image here.
     openGraph: {

@@ -8,6 +8,7 @@ import { ProductImage } from '@/components/product-image'
 import { parsePrice } from '@/lib/price'
 import Link from 'next/link'
 import { itemPath } from '@/lib/item-key'
+import { FavouriteButton } from '@/components/favourite-button'
 
 const BATCH_SIZE = 16
 
@@ -301,12 +302,13 @@ function ProductCard({
           >
             {product.category}
           </span>
+          <FavouriteButton itemKey={product.key} title={product.title} className="absolute right-2 top-2 z-10" />
           <button
             type="button"
             onClick={onReport}
             aria-label={`Report ${product.title}`}
             title="Report this item"
-            className="absolute right-2 top-2 z-10 flex size-7 items-center justify-center rounded-full bg-black/55 text-white/70 transition-colors hover:bg-black/75 hover:text-white"
+            className="absolute right-3 top-12 z-10 flex size-7 items-center justify-center rounded-full bg-black/55 text-white/70 transition-colors hover:bg-black/75 hover:text-white"
           >
             <Flag className="size-3.5" />
           </button>

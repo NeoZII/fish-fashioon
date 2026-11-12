@@ -34,7 +34,7 @@ export function FavouritesIntro({
     </>,
     <>It lands here instantly. No account, no sign-up.</>,
     <>
-      Hit <strong className="text-foreground">BUY</strong> when you&apos;re ready, or tap the heart again to remove it.
+      Hit <strong className="text-foreground">BUY</strong>{' '}when you&apos;re ready, or tap the heart again to remove it.
     </>,
   ]
 

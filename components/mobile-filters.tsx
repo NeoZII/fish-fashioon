@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { normalize } from '@/lib/search'
+import { labelMatches } from '@/lib/search'
 
 export type FilterGroup = {
   id: string
@@ -177,9 +177,8 @@ function FilterSection({
 }) {
   const [query, setQuery] = useState('')
   const options = useMemo(() => {
-    const q = normalize(query)
-    if (!q) return group.options
-    return group.options.filter((o) => o === 'ALL' || normalize(o).includes(q))
+    if (!query.trim()) return group.options
+    return group.options.filter((o) => o === 'ALL' || labelMatches(o, query))
   }, [group.options, query])
 
   return (

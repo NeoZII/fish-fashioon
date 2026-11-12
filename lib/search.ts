@@ -194,3 +194,30 @@ export function searchItems(items: Product[], query: string): Product[] {
   ranked.sort((a, b) => b.score - a.score || a.i - b.i)
   return ranked.map((r) => r.item)
 }
+
+/**
+ * Does a short label (a brand or seller name) match what someone typed?
+ * Same rules as the main search: substring, typos, and shorthand both ways
+ * ("rick" finds the brand "RO", "ro" finds "RICK OWENS").
+ */
+export function labelMatches(label: string, query: string): boolean {
+  const q = normalize(query)
+  if (!q) return true
+  const l = normalize(label)
+  if (l.includes(q) || l.replace(/ /g, '').includes(q.replace(/ /g, ''))) return true
+
+  // Shorthand: the typed text is part of an expansion whose short form is this label.
+  for (const [short, expansions] of Object.entries(SYNONYMS)) {
+    if (l === short && expansions.some((e) => normalize(e).includes(q))) return true
+    if (q === short && expansions.some((e) => l.includes(normalize(e)))) return true
+  }
+
+  // Typos, word by word.
+  const max = allowance(q.length)
+  if (!max) return false
+  return l.split(' ').some(
+    (w) =>
+      editDistance(q, w, max) <= max ||
+      (w.length > q.length && editDistance(q, w.slice(0, q.length), max) <= max),
+  )
+}

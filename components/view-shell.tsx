@@ -39,7 +39,7 @@ export function ViewShell({
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
             MENU
           </button>
-          <ShareButton title={`${title} · Fashion Sea`} />
+          <ShareButton title={`${title} · Fashion Sea`} align="right" />
         </header>
         {toolbar ? <div className="border-t border-border">{toolbar}</div> : null}
       </div>

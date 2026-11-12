@@ -15,6 +15,8 @@ type Props = {
   label?: string
   /** Preview image to warm up before the link is shared (so apps get it instantly). */
   previewImage?: string
+  /** Which edge of the button the panel lines up with. */
+  align?: 'left' | 'right'
 }
 
 const enc = encodeURIComponent
@@ -28,7 +30,7 @@ const enc = encodeURIComponent
  * Every link carries the page's Open Graph tags, so it unfurls into a preview
  * card on all of these platforms.
  */
-export function ShareButton({ url, title, text, className = '', label = 'SHARE', previewImage }: Props) {
+export function ShareButton({ url, title, text, className = '', label = 'SHARE', previewImage, align = 'left' }: Props) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -118,7 +120,7 @@ export function ShareButton({ url, title, text, className = '', label = 'SHARE',
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full z-50 mt-2 w-60 border border-border bg-card p-2 shadow-2xl"
+            className={`absolute top-full z-50 mt-2 w-60 border border-border bg-card p-2 shadow-2xl ${align === 'right' ? 'right-0' : 'left-0'}`}
           >
             <button
               type="button"

@@ -204,7 +204,12 @@ export function labelMatches(label: string, query: string, allowTypos = true): b
   const q = normalize(query)
   if (!q) return true
   const l = normalize(label)
-  if (l.includes(q) || l.replace(/ /g, '').includes(q.replace(/ /g, ''))) return true
+  // Very short queries ("nb", "lv") only match the start of a word, not the middle.
+  if (q.length < 3) {
+    if (l.split(' ').some((w) => w.startsWith(q))) return true
+  } else if (l.includes(q) || l.replace(/ /g, '').includes(q.replace(/ /g, ''))) {
+    return true
+  }
 
   // Shorthand: the typed text is part of an expansion whose short form is this label.
   for (const [short, expansions] of Object.entries(SYNONYMS)) {

@@ -13,6 +13,8 @@ type Props = {
   text?: string
   className?: string
   label?: string
+  /** Preview image to warm up before the link is shared (so apps get it instantly). */
+  previewImage?: string
 }
 
 const enc = encodeURIComponent
@@ -26,7 +28,7 @@ const enc = encodeURIComponent
  * Every link carries the page's Open Graph tags, so it unfurls into a preview
  * card on all of these platforms.
  */
-export function ShareButton({ url, title, text, className = '', label = 'SHARE' }: Props) {
+export function ShareButton({ url, title, text, className = '', label = 'SHARE', previewImage }: Props) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -49,6 +51,9 @@ export function ShareButton({ url, title, text, className = '', label = 'SHARE' 
   }, [open])
 
   async function onShare() {
+    // Ask the server to build/cache the preview card now, while the visitor
+    // picks an app; by the time WhatsApp/Discord fetch it, it's ready.
+    if (previewImage) fetch(previewImage, { priority: 'low' } as RequestInit).catch(() => {})
     const touch = window.matchMedia('(pointer: coarse)').matches
     if (touch && typeof navigator.share === 'function') {
       try {

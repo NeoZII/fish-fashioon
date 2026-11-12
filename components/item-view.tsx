@@ -119,7 +119,7 @@ export function ItemView({
                 BUY ON KAKOBUY
                 <ArrowUpRight className="size-4" />
               </a>
-              <ShareButton url={shareUrl} title={item.title} text={shareText} />
+              <ShareButton url={shareUrl} title={item.title} text={shareText} previewImage={`${itemPath(item)}/opengraph-image`} />
             </div>
 
             <p className="mt-6 max-w-md font-mono text-[11px] leading-relaxed tracking-wide text-muted-foreground">

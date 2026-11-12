@@ -10,6 +10,10 @@ import { parsePrice } from '@/lib/price'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 export const alt = 'Fashion Sea find'
+// Build each card once, then serve it from Vercel's cache (refreshed every
+// 10 min). Without this the card was regenerated on every request (3–4 s),
+// which can exceed the preview timeout of apps like WhatsApp.
+export const dynamic = 'force-static'
 export const revalidate = 600
 
 const BG = '#0a0a0c'

@@ -200,7 +200,7 @@ export function searchItems(items: Product[], query: string): Product[] {
  * Same rules as the main search: substring, typos, and shorthand both ways
  * ("rick" finds the brand "RO", "ro" finds "RICK OWENS").
  */
-export function labelMatches(label: string, query: string): boolean {
+export function labelMatches(label: string, query: string, allowTypos = true): boolean {
   const q = normalize(query)
   if (!q) return true
   const l = normalize(label)
@@ -213,7 +213,7 @@ export function labelMatches(label: string, query: string): boolean {
   }
 
   // Typos, word by word.
-  const max = allowance(q.length)
+  const max = allowTypos ? allowance(q.length) : 0
   if (!max) return false
   return l.split(' ').some(
     (w) =>

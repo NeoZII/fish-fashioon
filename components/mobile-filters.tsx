@@ -178,6 +178,9 @@ function FilterSection({
   const [query, setQuery] = useState('')
   const options = useMemo(() => {
     if (!query.trim()) return group.options
+    // Matches as typed (or via shorthand) first; typo look-alikes only if none.
+    const exact = group.options.filter((o) => o === 'ALL' || labelMatches(o, query, false))
+    if (exact.length > 1) return exact
     return group.options.filter((o) => o === 'ALL' || labelMatches(o, query))
   }, [group.options, query])
 

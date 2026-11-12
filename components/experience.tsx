@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ViewId } from '@/lib/data'
-import { VIEW_PATHS, viewFromPath } from '@/lib/sections'
+import { SECTION_META, VIEW_PATHS, viewFromPath } from '@/lib/sections'
 import { useGlobalItems } from '@/hooks/use-global-items'
 import { P3Menu } from '@/components/p3-menu'
 import { PromoModal } from '@/components/promo-modal'
@@ -51,6 +51,11 @@ export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
   }, [])
 
   const navigate = useCallback((target: ViewId) => transition(target, true), [transition])
+
+  // Keep the browser tab title in sync with the section on screen.
+  useEffect(() => {
+    document.title = view === 'menu' ? 'Fashion Sea' : `${SECTION_META[view].title} · Fashion Sea`
+  }, [view])
 
   // Browser Back/Forward between sections plays the same curtain transition.
   useEffect(() => {

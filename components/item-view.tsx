@@ -9,6 +9,7 @@ import { itemPath } from '@/lib/item-key'
 import { parsePrice } from '@/lib/price'
 import { ProductImage } from '@/components/product-image'
 import { ShareButton } from '@/components/share-button'
+import { isLandingPage } from '@/components/landing-tracker'
 
 export function ItemView({
   item,
@@ -25,9 +26,8 @@ export function ItemView({
   // Back to where the visitor came from on our site; people arriving from a
   // shared link (WhatsApp, Discord…) go to All Items instead of leaving.
   const goBack = () => {
-    const fromSite = document.referrer.startsWith(window.location.origin)
-    if (fromSite && window.history.length > 1) router.back()
-    else router.push('/all')
+    if (isLandingPage()) router.push('/all')
+    else router.back()
   }
 
   const shareText = `${item.title}${price.usd ? ` · ${price.usd}` : ''} on Fashion Sea`

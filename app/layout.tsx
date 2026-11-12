@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Anton, Geist, Geist_Mono } from 'next/font/google'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
+import { LandingTracker } from '@/components/landing-tracker'
 import './globals.css'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
@@ -44,6 +45,7 @@ export default function RootLayout({
       className={`dark bg-background ${geist.variable} ${geistMono.variable} ${anton.variable}`}
     >
       <body className="antialiased font-sans">
+        <LandingTracker />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

@@ -1,4 +1,5 @@
 import { type Product } from './data'
+import { cleanCatalogue } from './clean-catalogue'
 
 /**
  * Live Google Apps Script deployment feeding the catalogue. Columns in order:
@@ -21,26 +22,8 @@ export const CATALOGUE_REVALIDATE = 300
  */
 let lastGood: Product[] = []
 
-/** Coerce the raw sheet rows into clean, typed products. */
-export function normalizeCatalogue(raw: unknown): Product[] {
-  if (!Array.isArray(raw)) return []
-  return raw
-    .map((row, i) => {
-      const r = row as Record<string, unknown>
-      return {
-        id: String(r.id ?? i),
-        title: String(r.title ?? ''),
-        link: String(r.link ?? '#'),
-        image: String(r.image ?? ''),
-        category: String(r.category ?? '').toUpperCase(),
-        brand: String(r.brand ?? ''),
-        price: String(r.price ?? ''),
-        seller: String(r.seller ?? ''),
-        date_added: String(r.date_added ?? ''),
-      }
-    })
-    .filter((p) => p.title)
-}
+/** Coerce the raw sheet rows into clean, typed products (see clean-catalogue.ts). */
+export const normalizeCatalogue = cleanCatalogue
 
 /**
  * Fetch + normalize the catalogue from the (slow, occasionally flaky) upstream.

@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { CATEGORIES, brandFilters, type Product } from '@/lib/data'
+import { categoryFilters, brandFilters, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
 import { FilterBar } from '@/components/filter-bar'
 import { ProductGrid } from '@/components/product-grid'
@@ -30,6 +30,7 @@ export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () =>
 
   // Brand options derive from the recent feed so the list stays relevant.
   const brands = useMemo(() => brandFilters(recent), [recent])
+  const categories = useMemo(() => categoryFilters(recent), [recent])
 
   const latest = useMemo(() => {
     return recent.filter(
@@ -50,7 +51,7 @@ export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () =>
         <div className="flex flex-col divide-y divide-border">
           <FilterBar
             label="CATEGORY"
-            options={[...CATEGORIES]}
+            options={categories}
             active={category}
             onChange={setCategory}
             accent="primary"

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
-import { CATEGORIES, brandFilters, matchesQuery, type Product } from '@/lib/data'
+import { categoryFilters, brandFilters, matchesQuery, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
 import { FilterBar } from '@/components/filter-bar'
 import { SearchBar } from '@/components/search-bar'
@@ -13,6 +13,7 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
   const [query, setQuery] = useState('')
 
   const brands = useMemo(() => brandFilters(items), [items])
+  const categories = useMemo(() => categoryFilters(items), [items])
 
   const filtered = useMemo(() => {
     return items.filter(
@@ -37,7 +38,7 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
           <SearchBar onChange={handleSearch} accent="secondary" />
           <FilterBar
             label="CATEGORY"
-            options={[...CATEGORIES]}
+            options={categories}
             active={category}
             onChange={setCategory}
             accent="secondary"

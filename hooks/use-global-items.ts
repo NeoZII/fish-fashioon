@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { type Product } from '@/lib/data'
+import { cleanCatalogue } from '@/lib/clean-catalogue'
 
 /**
  * Server-side cached proxy for the Google Apps Script catalogue. The raw sheet
@@ -11,27 +12,9 @@ import { type Product } from '@/lib/data'
 const CATALOGUE_ENDPOINT = '/api/catalogue'
 
 /** localStorage key holding the last successfully fetched catalogue. */
-const CACHE_KEY = 'fishfashion:catalogue:v1'
+const CACHE_KEY = 'fishfashion:catalogue:v2'
 
-function normalize(raw: unknown): Product[] {
-  if (!Array.isArray(raw)) return []
-  return raw
-    .map((row, i) => {
-      const r = row as Record<string, unknown>
-      return {
-        id: String(r.id ?? i),
-        title: String(r.title ?? ''),
-        link: String(r.link ?? '#'),
-        image: String(r.image ?? ''),
-        category: String(r.category ?? '').toUpperCase(),
-        brand: String(r.brand ?? ''),
-        price: String(r.price ?? ''),
-        seller: String(r.seller ?? ''),
-        date_added: String(r.date_added ?? ''),
-      }
-    })
-    .filter((p) => p.title)
-}
+const normalize = cleanCatalogue
 
 // Give up on the request after this long so the loading screen can never hang
 // indefinitely on a slow network.
@@ -54,6 +37,8 @@ function readCache(): Product[] | null {
 function writeCache(items: Product[]) {
   if (typeof window === 'undefined') return
   try {
+    // Drop the pre-cleanup copy (~1.5 MB) left by older versions of the site.
+    window.localStorage.removeItem('fishfashion:catalogue:v1')
     window.localStorage.setItem(CACHE_KEY, JSON.stringify(items))
   } catch {
     // Ignore quota / serialization errors — caching is best-effort.

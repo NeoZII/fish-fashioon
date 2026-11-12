@@ -1,4 +1,5 @@
 import type { Product } from './data'
+import { itemKey } from './item-key'
 
 /**
  * Data hygiene for the Google Sheet feed.
@@ -117,6 +118,7 @@ export function cleanProduct(row: unknown, index: number): Product | null {
     price: cleanPrice(r.price),
     seller: squash(r.seller).toUpperCase(),
     date_added: squash(r.date_added),
+    key: itemKey(link, title),
   }
 }
 

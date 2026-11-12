@@ -1,18 +1,19 @@
+import { preload } from 'react-dom'
 import { Experience } from '@/components/experience'
-import { getCatalogue } from '@/lib/catalogue'
+import { CATALOGUE_ENDPOINT } from '@/lib/catalogue-endpoint'
 
-// Render on every request instead of statically pre-rendering. This is the key
-// fix for the "0 products even after refreshing" bug: with ISR (`revalidate`),
-// a single empty/slow upstream response at generation time would get pinned as
-// static HTML and served to everyone for the whole window. Rendering per
-// request means an empty result is never cached — the next load simply retries.
+// The page itself is now a small static shell served from the CDN edge; it no
+// longer embeds the ~1.7 MB catalogue. The catalogue streams in from
+// /api/catalogue (edge-cached, see app/api/catalogue/route.ts) while the menu
+// animation plays, so first paint no longer waits for the data.
 //
-// This stays fast because getCatalogue() reads through the Next.js fetch Data
-// Cache (revalidate 300), so the slow Apps Script origin is hit at most once
-// every 5 minutes; warm renders complete in tens of milliseconds.
-export const dynamic = 'force-dynamic'
-
-export default async function Page() {
-  const initialItems = await getCatalogue()
-  return <Experience initialItems={initialItems} />
+// Previously this page was rendered per request with the whole catalogue
+// inlined, to dodge an "empty catalogue frozen into static HTML" bug. That bug
+// can't happen any more: the HTML contains no catalogue, and the API route
+// refuses to cache an empty response.
+export default function Page() {
+  // Start downloading the catalogue in parallel with the JS bundle instead of
+  // after hydration. The client fetch in useGlobalItems reuses this request.
+  preload(CATALOGUE_ENDPOINT, { as: 'fetch', crossOrigin: 'anonymous' })
+  return <Experience />
 }

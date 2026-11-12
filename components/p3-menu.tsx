@@ -1,8 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { type CSSProperties, useCallback, useEffect, useState } from 'react'
-import { MENU_ITEMS, type MenuItem, type Product } from '@/lib/data'
+import { type CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
+import { MENU_ITEMS, recentItems, type MenuItem, type Product } from '@/lib/data'
 import { ProductSlideshow } from '@/components/product-slideshow'
 
 export function P3Menu({
@@ -13,6 +13,8 @@ export function P3Menu({
   items?: Product[]
 }) {
   const [active, setActive] = useState(0)
+  // Live "NEW" counter for Latest Drops; appears once the catalogue has loaded.
+  const newCount = useMemo(() => recentItems(items).length, [items])
 
   const move = useCallback((dir: number) => {
     setActive((prev) => Math.min(MENU_ITEMS.length - 1, Math.max(0, prev + dir)))
@@ -101,6 +103,9 @@ export function P3Menu({
               onMouseEnter={() => setActive(i)}
               onFocus={() => setActive(i)}
               onClick={() => onNavigate(item.id)}
+              aria-label={
+                item.id === 'drops' && newCount > 0 ? `${item.label}, ${newCount} new this week` : item.label
+              }
               style={{ marginLeft: item.offsetX }}
               className="group relative flex items-center gap-4 text-left outline-none"
               aria-current={isActive ? 'true' : undefined}
@@ -158,6 +163,20 @@ export function P3Menu({
                 </span>
               </span>
 
+              {/* live NEW counter on Latest Drops */}
+              {item.id === 'drops' && newCount > 0 && (
+                <motion.span
+                  aria-hidden
+                  initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
+                  animate={{ opacity: 1, scale: 1, rotate: -8 }}
+                  transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
+                  className="shrink-0 self-start bg-destructive px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.18em] text-destructive-foreground md:text-xs"
+                  style={{ clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)' }}
+                >
+                  {newCount} NEW
+                </motion.span>
+              )}
+
             </motion.button>
           )
         })}
@@ -168,7 +187,9 @@ export function P3Menu({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 0.5 }}
-        className="absolute bottom-6 right-8 z-20 flex flex-col items-end gap-1.5 font-mono text-[11px] tracking-[0.2em] text-muted-foreground"
+        aria-hidden
+        // Keyboard hints only make sense with a mouse/keyboard, not on phones.
+        className="absolute bottom-6 right-8 z-20 hidden flex-col items-end gap-1.5 font-mono text-[11px] tracking-[0.2em] text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:flex"
       >
         <div className="flex items-center gap-2">
           <kbd className="rounded-sm border border-border px-1.5 py-0.5">↑↓</kbd>

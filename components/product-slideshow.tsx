@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
 import type { Product } from '@/lib/data'
 import { useIsDesktop } from '@/hooks/use-is-desktop'
+import { thumbUrl } from '@/lib/image'
 
 const ADVANCE_MS = 3800
 
@@ -67,9 +68,15 @@ export function ProductSlideshow({
         <AnimatePresence mode="popLayout">
           <motion.img
             key={current.id + index}
-            src={current.image || '/placeholder.svg'}
+            src={current.image ? thumbUrl(current.image, 800) : '/placeholder.svg'}
             alt=""
-            crossOrigin="anonymous"
+            referrerPolicy="no-referrer"
+            decoding="async"
+            onError={(e) => {
+              // Fall back to the original photo if the resized one is refused.
+              const img = e.currentTarget
+              if (current.image && img.src !== current.image) img.src = current.image
+            }}
             initial={{ opacity: 0, scale: 1.06 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}

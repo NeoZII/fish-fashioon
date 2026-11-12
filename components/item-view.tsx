@@ -55,7 +55,7 @@ export function ItemView({
         </header>
       </div>
 
-      <main className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-6 md:px-10 md:pt-10">
+      <main className="relative z-10 mx-auto max-w-6xl px-4 pb-32 pt-6 md:px-10 md:pb-24 md:pt-10">
         <div className="grid gap-8 md:grid-cols-2 md:gap-12">
           {/* photo */}
           <motion.div
@@ -172,6 +172,28 @@ export function ItemView({
           </section>
         )}
       </main>
+
+      {/* phones: price + BUY always within thumb reach */}
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:hidden">
+        <div className="flex min-w-0 flex-1 flex-col leading-none">
+          {price.usd && (
+            <span className="truncate font-mono text-lg font-bold tabular-nums text-primary">{price.usd}</span>
+          )}
+          {price.cny && (
+            <span className="mt-1 truncate font-mono text-[11px] tabular-nums text-muted-foreground">{price.cny}</span>
+          )}
+        </div>
+        <a
+          href={item.link}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          className="flex min-h-[48px] shrink-0 items-center gap-2 bg-foreground px-5 font-mono text-xs font-bold tracking-[0.2em] text-background active:bg-primary active:text-primary-foreground"
+          style={{ transform: 'skewX(-8deg)' }}
+        >
+          BUY ON KAKOBUY
+          <ArrowUpRight className="size-4" />
+        </a>
+      </div>
     </div>
   )
 }

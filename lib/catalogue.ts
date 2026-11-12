@@ -55,8 +55,8 @@ async function fetchCatalogue(cached: boolean, timeoutMs: number): Promise<Produ
  *   2. A fresh uncached retry if the cached copy is empty/errored.
  *   3. The durable in-memory last-known-good copy from an earlier success.
  * Only returns [] if the sheet has NEVER been fetched successfully on this
- * server instance — in which case the client falls back to its localStorage
- * cache, so a returning visitor still sees products.
+ * server instance. The API route then answers 503 (never cached) and the
+ * client retries, while the CDN keeps serving its last good copy.
  */
 export async function getCatalogue(): Promise<Product[]> {
   // Happy path: served from the Data Cache, so this is cheap on warm caches.

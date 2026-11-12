@@ -1,19 +1,33 @@
 import { getCatalogue, CATALOGUE_REVALIDATE } from '@/lib/catalogue'
 
 /**
- * Server-side cached proxy for the catalogue. Used by the client hook to
- * revalidate in the background. Shares the same cached upstream fetch as the
- * server-rendered page, so this is effectively free after warm-up.
+ * The catalogue, served as JSON and cached at Vercel's edge.
+ *
+ * - The upstream Google Sheet is read through the Next.js Data Cache (refreshed
+ *   every CATALOGUE_REVALIDATE seconds) with an in-memory last-known-good copy,
+ *   so the slow Apps Script is hit at most once per window.
+ * - The edge CDN keeps the response for CATALOGUE_REVALIDATE seconds and keeps
+ *   serving the previous copy for up to a day while it refreshes in the
+ *   background, so visitors never wait on Google.
+ * - An empty result is NEVER cached (503 + no-store): the client retries and
+ *   the next request tries the sheet again. This is what prevents the old
+ *   "0 products frozen for everyone" bug.
  */
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const items = await getCatalogue()
+
+  if (!items.length) {
+    return Response.json(
+      { error: 'Catalogue temporarily unavailable' },
+      { status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '3' } },
+    )
+  }
+
   return Response.json(items, {
     headers: {
-      // Let the CDN/browser serve a cached copy immediately and revalidate in
-      // the background for a full day if the origin is slow/unavailable.
-      'Cache-Control': `public, s-maxage=${CATALOGUE_REVALIDATE}, stale-while-revalidate=86400`,
+      'Cache-Control': `public, max-age=60, s-maxage=${CATALOGUE_REVALIDATE}, stale-while-revalidate=86400`,
     },
   })
 }

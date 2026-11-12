@@ -184,3 +184,16 @@ export const SOCIALS: Social[] = [
   { id: 's3', label: 'DISCORD', handle: 'discord.gg/q2EJG25Ebc', meta: '', href: 'https://discord.gg/q2EJG25Ebc' },
   { id: 's4', label: 'REDDIT', handle: '', meta: 'COMING SOON', href: '#', comingSoon: true },
 ]
+
+/** Dates on or before this are sheet placeholders, not real "added" dates. */
+const PLACEHOLDER_DATE_FLOOR = new Date('2020-01-01T00:00:00').getTime()
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
+
+/** Items added in the last 7 days, newest first (the Latest Drops feed). */
+export function recentItems(items: Product[], now: number = Date.now()): Product[] {
+  return items
+    .map((item) => ({ item, ts: new Date(item.date_added).getTime() }))
+    .filter(({ ts }) => !Number.isNaN(ts) && ts > PLACEHOLDER_DATE_FLOOR && now - ts <= SEVEN_DAYS_MS)
+    .sort((a, b) => b.ts - a.ts)
+    .map(({ item }) => item)
+}

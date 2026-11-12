@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { categoryFilters, brandFilters, type Product } from '@/lib/data'
+import { categoryFilters, brandFilters, recentItems, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
 import { FilterBar } from '@/components/filter-bar'
 import { ProductGrid } from '@/components/product-grid'
@@ -11,22 +11,7 @@ export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () =>
   const [brand, setBrand] = useState<string>('ALL')
 
   // First narrow to the last-7-days feed (date-sorted, newest first).
-  const recent = useMemo(() => {
-    const now = Date.now()
-    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000
-    // Anything on or before this cutoff is treated as a "placeholder" date and ignored.
-    const floor = new Date('2020-01-01T00:00:00').getTime()
-
-    return items
-      .map((item) => ({ item, ts: new Date(item.date_added).getTime() }))
-      .filter(({ ts }) => {
-        if (Number.isNaN(ts)) return false // unparseable dates
-        if (ts <= floor) return false // ignore 2020-01-01 or earlier
-        return now - ts <= sevenDaysMs // only the last 7 days
-      })
-      .sort((a, b) => b.ts - a.ts) // newest first
-      .map(({ item }) => item)
-  }, [items])
+  const recent = useMemo(() => recentItems(items), [items])
 
   // Brand options derive from the recent feed so the list stays relevant.
   const brands = useMemo(() => brandFilters(recent), [recent])

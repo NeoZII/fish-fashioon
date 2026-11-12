@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, Check, Flag, Shuffle, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Product } from '@/lib/data'
+import { ProductImage } from '@/components/product-image'
 
 const BATCH_SIZE = 16
 
@@ -300,10 +301,11 @@ function ProductCard({
         className="group flex h-full flex-col overflow-hidden rounded-md border border-border bg-card"
       >
         <div className="relative aspect-[4/5] overflow-hidden">
-          <img
-            src={product.image || '/placeholder.svg'}
+          <ProductImage
+            src={product.image}
             alt={product.title}
-            loading="lazy"
+            // First row loads immediately; the rest only as they scroll into view.
+            loading={index < 4 ? 'eager' : 'lazy'}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent" />

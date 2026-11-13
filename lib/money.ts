@@ -16,11 +16,12 @@ export type FxRates = { EUR: number; CNY: number }
 export const FX_HEADER = 'x-fx-usd'
 
 /**
- * Used until the live rate arrives (and if the rate service is down).
- * EUR: ECB reference, Nov 2026 (1 EUR ≈ 1.12 USD).
- * CNY: the ratio Kakobuy itself uses in the catalogue's "￥ ≈ $" prices.
+ * EUR: used until the live ECB rate arrives (and if the rate service is down);
+ * ECB reference mid-Nov 2026 was 1 USD ≈ 0.905 EUR.
+ * CNY: always this value: the ratio Kakobuy itself uses in the catalogue's
+ * "￥399 ≈ $ 64.24" prices, so yuan-only items match what Kakobuy charges.
  */
-export const FALLBACK_RATES: FxRates = { EUR: 0.89, CNY: 6.2 }
+export const FALLBACK_RATES: FxRates = { EUR: 0.9, CNY: 6.2 }
 
 export type PriceNumbers = {
   /** Price in US dollars (converted when the sheet only has € or ¥). */

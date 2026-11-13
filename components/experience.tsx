@@ -56,9 +56,18 @@ export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
 
   const navigate = useCallback((target: ViewId) => transition(target, true), [transition])
 
-  // Keep the browser tab title in sync with the section on screen.
+  // Keep the browser tab title in sync with the section on screen, in the
+  // visitor's language. Next.js writes the (English) metadata title into
+  // <head> after the page starts, so re-apply ours whenever it gets replaced.
   useEffect(() => {
-    document.title = view === 'menu' ? 'Fashion Sea' : `${t.tab[view]} · Fashion Sea`
+    const title = view === 'menu' ? 'Fashion Sea' : `${t.tab[view]} · Fashion Sea`
+    const apply = () => {
+      if (document.title !== title) document.title = title
+    }
+    apply()
+    const observer = new MutationObserver(apply)
+    observer.observe(document.head, { childList: true, subtree: true, characterData: true })
+    return () => observer.disconnect()
   }, [view, t])
 
   // Browser Back/Forward between sections plays the same curtain transition.

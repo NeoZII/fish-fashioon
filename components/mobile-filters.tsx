@@ -4,6 +4,8 @@ import { AnimatePresence, motion, type PanInfo } from 'framer-motion'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { labelMatches } from '@/lib/search'
+import { useT } from '@/lib/prefs'
+import type { Messages } from '@/lib/i18n'
 
 export type FilterGroup = {
   id: string
@@ -13,6 +15,10 @@ export type FilterGroup = {
   onChange: (value: string) => void
   /** Show a search box above the chips (for long lists like brands). */
   searchable?: boolean
+  /** Placeholder for that search box ("Find a brand…"). */
+  searchPlaceholder?: string
+  /** Display text for an option (the value itself stays untranslated). */
+  formatOption?: (option: string) => string
 }
 
 /**
@@ -29,7 +35,9 @@ export function MobileFilters({
   resultCount: number
   accent?: 'primary' | 'secondary'
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
+  const display = (g: FilterGroup, o: string) => (g.formatOption ? g.formatOption(o) : o === 'ALL' ? t.common.all : o)
   const activeGroups = groups.filter((g) => g.active !== 'ALL')
 
   const accentBg = accent === 'primary' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
@@ -67,18 +75,19 @@ export function MobileFilters({
           style={{ transform: 'skewX(-8deg)' }}
         >
           <SlidersHorizontal className="size-4" aria-hidden />
-          FILTERS{activeGroups.length ? ` · ${activeGroups.length}` : ''}
+          {t.filters.title}
+          {activeGroups.length ? ` · ${activeGroups.length}` : ''}
         </button>
         {activeGroups.map((g) => (
           <button
             key={g.id}
             type="button"
             onClick={() => g.onChange('ALL')}
-            aria-label={`Remove ${g.label.toLowerCase()} filter ${g.active}`}
+            aria-label={t.filters.remove(g.label, display(g, g.active))}
             className={`flex min-h-[40px] shrink-0 items-center gap-1.5 border px-3 font-mono text-[11px] font-bold tracking-[0.15em] text-foreground ${accentBorder}`}
             style={{ transform: 'skewX(-8deg)' }}
           >
-            {g.active}
+            {display(g, g.active)}
             <X className="size-3.5" aria-hidden />
           </button>
         ))}
@@ -100,7 +109,7 @@ export function MobileFilters({
               key="sheet"
               role="dialog"
               aria-modal="true"
-              aria-label="Filters"
+              aria-label={t.filters.title}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -117,12 +126,12 @@ export function MobileFilters({
               </div>
               <div className="flex shrink-0 items-center justify-between px-5 pb-3 pt-2">
                 <h2 className="font-display text-3xl italic tracking-wide text-foreground" style={{ transform: 'skewX(-6deg)' }}>
-                  FILTERS
+                  {t.filters.title}
                 </h2>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  aria-label="Close filters"
+                  aria-label={t.filters.close}
                   className="flex size-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <X className="size-5" />
@@ -135,7 +144,14 @@ export function MobileFilters({
                 onPointerDownCapture={(e) => e.stopPropagation()}
               >
                 {groups.map((g) => (
-                  <FilterSection key={g.id} group={g} accentBg={accentBg} accentBorder={accentBorder} />
+                  <FilterSection
+                    key={g.id}
+                    group={g}
+                    t={t}
+                    display={(o) => display(g, o)}
+                    accentBg={accentBg}
+                    accentBorder={accentBorder}
+                  />
                 ))}
               </div>
 
@@ -147,7 +163,7 @@ export function MobileFilters({
                   disabled={!activeGroups.length}
                   className="min-h-[48px] px-4 font-mono text-xs font-bold tracking-[0.2em] text-muted-foreground disabled:opacity-40"
                 >
-                  CLEAR ALL
+                  {t.filters.clearAll}
                 </button>
                 <button
                   type="button"
@@ -155,7 +171,7 @@ export function MobileFilters({
                   className={`flex min-h-[48px] flex-1 items-center justify-center font-mono text-xs font-bold tracking-[0.25em] ${accentBg}`}
                   style={{ transform: 'skewX(-8deg)' }}
                 >
-                  SHOW {resultCount.toLocaleString('en-US')} {resultCount === 1 ? 'ITEM' : 'ITEMS'}
+                  {t.filters.show(resultCount)}
                 </button>
               </div>
             </motion.div>
@@ -168,10 +184,14 @@ export function MobileFilters({
 
 function FilterSection({
   group,
+  t,
+  display,
   accentBg,
   accentBorder,
 }: {
   group: FilterGroup
+  t: Messages
+  display: (option: string) => string
   accentBg: string
   accentBorder: string
 }) {
@@ -179,17 +199,20 @@ function FilterSection({
   const options = useMemo(() => {
     if (!query.trim()) return group.options
     // Matches as typed (or via shorthand) first; typo look-alikes only if none.
-    const exact = group.options.filter((o) => o === 'ALL' || labelMatches(o, query, false))
+    // Match the sheet value and the translated label, so "pantalons" finds PANTS.
+    const matches = (o: string, typos?: boolean) =>
+      labelMatches(o, query, typos) || (display(o) !== o && labelMatches(display(o), query, typos))
+    const exact = group.options.filter((o) => o === 'ALL' || matches(o, false))
     if (exact.length > 1) return exact
-    return group.options.filter((o) => o === 'ALL' || labelMatches(o, query))
-  }, [group.options, query])
+    return group.options.filter((o) => o === 'ALL' || matches(o))
+  }, [group.options, query, display])
 
   return (
     <section className="border-t border-border py-4 first:border-t-0">
       <div className="mb-3 flex items-baseline justify-between">
         <h3 className="font-mono text-[11px] font-bold tracking-[0.3em] text-muted-foreground">{group.label}</h3>
         <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground">
-          {(group.options.length - 1).toLocaleString('en-US')}
+          {(group.options.length - 1).toLocaleString()}
         </span>
       </div>
 
@@ -200,12 +223,12 @@ function FilterSection({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Find a ${group.label.toLowerCase()}…`}
-            aria-label={`Find a ${group.label.toLowerCase()}`}
+            placeholder={group.searchPlaceholder ?? t.filters.findBrand}
+            aria-label={group.searchPlaceholder ?? t.filters.findBrand}
             className="w-full bg-transparent py-2.5 font-mono text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
           {query && (
-            <button type="button" onClick={() => setQuery('')} aria-label="Clear" className="text-muted-foreground">
+            <button type="button" onClick={() => setQuery('')} aria-label={t.common.clearSearch} className="text-muted-foreground">
               <X className="size-4" />
             </button>
           )}
@@ -226,12 +249,12 @@ function FilterSection({
               }`}
               style={{ transform: 'skewX(-8deg)' }}
             >
-              {option}
+              {display(option)}
             </button>
           )
         })}
         {options.length <= 1 && query && (
-          <p className="py-2 font-mono text-xs text-muted-foreground">No {group.label.toLowerCase()} matches “{query}”.</p>
+          <p className="py-2 font-mono text-xs text-muted-foreground">{t.filters.noMatch(query)}</p>
         )}
       </div>
     </section>

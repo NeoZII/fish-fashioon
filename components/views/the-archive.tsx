@@ -8,11 +8,15 @@ import { FilterBar } from '@/components/filter-bar'
 import { MobileFilters } from '@/components/mobile-filters'
 import { SearchBar } from '@/components/search-bar'
 import { ProductGrid } from '@/components/product-grid'
+import { useT } from '@/lib/prefs'
+import { categoryLabel } from '@/lib/i18n'
 
 export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => void }) {
   const [category, setCategory] = useState<string>('ALL')
   const [brand, setBrand] = useState<string>('ALL')
   const [query, setQuery] = useState('')
+  const t = useT()
+  const catLabel = (c: string) => categoryLabel(t, c)
 
   const brands = useMemo(() => brandFilters(items), [items])
   const categories = useMemo(() => categoryFilters(items), [items])
@@ -32,23 +36,24 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
   return (
     <ViewShell
       index="02"
-      title="ALL ITEMS"
+      title={t.section.archive}
       subtitle="THE GALLERY"
       accent="secondary"
       onBack={onBack}
       toolbar={
         <div className="flex flex-col divide-y divide-border">
-          <SearchBar onChange={handleSearch} accent="secondary" />
+          <SearchBar onChange={handleSearch} accent="secondary" placeholder={t.common.searchPlaceholder} />
           <div className="hidden flex-col divide-y divide-border md:flex">
             <FilterBar
-              label="CATEGORY"
+              label={t.common.category}
               options={categories}
               active={category}
               onChange={setCategory}
               accent="secondary"
+              formatOption={catLabel}
             />
             <FilterBar
-              label="BRAND"
+              label={t.common.brand}
               options={brands}
               active={brand}
               onChange={setBrand}
@@ -59,8 +64,23 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
             accent="secondary"
             resultCount={filtered.length}
             groups={[
-              { id: 'category', label: 'CATEGORY', options: categories, active: category, onChange: setCategory },
-              { id: 'brand', label: 'BRAND', options: brands, active: brand, onChange: setBrand, searchable: true },
+              {
+                id: 'category',
+                label: t.common.category,
+                options: categories,
+                active: category,
+                onChange: setCategory,
+                formatOption: catLabel,
+              },
+              {
+                id: 'brand',
+                label: t.common.brand,
+                options: brands,
+                active: brand,
+                onChange: setBrand,
+                searchable: true,
+                searchPlaceholder: t.filters.findBrand,
+              },
             ]}
           />
         </div>
@@ -68,10 +88,11 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
     >
       <div className="mb-8 flex items-end justify-between gap-4">
         <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-          {`Every item catalogued: ${items.length.toLocaleString('en-US')} finds and more added daily.`}
+          {t.archive.intro(items.length)}
         </p>
         <span className="shrink-0 font-mono text-xs tabular-nums text-secondary">
-          {String(filtered.length).padStart(2, '0')} ITEMS
+          {filtered.length < 10 ? '0' : ''}
+          {t.common.items(filtered.length)}
         </span>
       </div>
       <ProductGrid
@@ -80,7 +101,7 @@ export function TheArchive({ items, onBack }: { items: Product[]; onBack: () => 
         // While searching, keep best-match order instead of shuffling.
         shuffleItems={!query}
         showShuffle={!query}
-        emptyMessage={query ? 'NO ITEMS FOUND' : 'NOTHING IN THIS DRAWER YET'}
+        emptyMessage={query ? t.common.noItemsFound : t.common.emptyDrawer}
       />
     </ViewShell>
   )

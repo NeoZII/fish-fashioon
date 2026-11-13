@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Product } from '@/lib/data'
 import { useIsDesktop } from '@/hooks/use-is-desktop'
 import { thumbUrl } from '@/lib/image'
+import { usePriceFormatter, useT } from '@/lib/prefs'
 
 const ADVANCE_MS = 3800
 
@@ -21,6 +22,8 @@ export function ProductSlideshow({
   onOpenArchive?: () => void
 }) {
   const isDesktop = useIsDesktop()
+  const t = useT()
+  const formatPrice = usePriceFormatter()
 
   // Randomized pool of SELLERS-section items (those with a non-empty seller,
   // same rule as the Sellers view) that actually have an image. Shuffled once
@@ -58,7 +61,7 @@ export function ProductSlideshow({
       <button
         type="button"
         onClick={onOpenArchive}
-        aria-label="Open The Archive"
+        aria-label={t.menu.slideshowAria}
         className="group relative aspect-[3/4] w-[min(34vw,440px)] cursor-pointer outline-none 2xl:w-[520px]"
         style={{ transform: 'skewX(-4deg)' }}
       >
@@ -97,14 +100,16 @@ export function ProductSlideshow({
               className="flex flex-col gap-1.5"
             >
               <span className="font-mono text-xs uppercase tracking-[0.25em] text-primary">
-                {current.seller || current.brand || 'SELLER'}
+                {current.seller || current.brand || t.common.seller}
               </span>
               <span className="line-clamp-1 font-display text-2xl italic leading-none text-foreground 2xl:text-3xl">
                 {current.title}
               </span>
-              {current.price ? (
-                <span className="font-mono text-sm text-muted-foreground">{current.price}</span>
-              ) : null}
+              {(() => {
+                const p = formatPrice(current.price)
+                const text = p.main ? [p.main, p.cny].filter(Boolean).join(' · ') : p.cny || p.raw
+                return text ? <span className="font-mono text-sm text-muted-foreground">{text}</span> : null
+              })()}
             </motion.div>
           </AnimatePresence>
         </div>

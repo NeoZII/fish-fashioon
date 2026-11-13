@@ -1,13 +1,20 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Anton, Geist, Geist_Mono } from 'next/font/google'
+import { Anton, Geist, Geist_Mono, Oswald } from 'next/font/google'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 import { LandingTracker } from '@/components/landing-tracker'
 import './globals.css'
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
+// Geist (body sans) is only used for a little text (e.g. the promo popup), so
+// it isn't preloaded: the first paint only waits on Anton + Geist Mono.
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist', preload: false })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
-const anton = Anton({ subsets: ['latin'], weight: '400', variable: '--font-anton' })
+// Anton has no Cyrillic, so Russian headings fall through to Oswald (same
+// condensed-bold feel). Anton's metric-adjusted fallback is disabled because a
+// local fallback would otherwise catch the Cyrillic letters before Oswald.
+// Oswald isn't preloaded; browsers fetch it when Cyrillic text shows up.
+const anton = Anton({ subsets: ['latin'], weight: '400', variable: '--font-anton', adjustFontFallback: false })
+const oswald = Oswald({ subsets: ['cyrillic'], weight: '700', variable: '--font-oswald', preload: false })
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -42,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark bg-background ${geist.variable} ${geistMono.variable} ${anton.variable}`}
+      className={`dark bg-background ${geist.variable} ${geistMono.variable} ${anton.variable} ${oswald.variable}`}
     >
       <body className="antialiased font-sans">
         <LandingTracker />

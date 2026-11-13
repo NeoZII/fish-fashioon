@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import { useT } from '@/lib/prefs'
 
 export function FilterBar({
   options,
@@ -8,13 +9,18 @@ export function FilterBar({
   onChange,
   accent = 'primary',
   label,
+  formatOption,
 }: {
   options: string[]
   active: string
   onChange: (value: string) => void
   accent?: 'primary' | 'secondary'
   label?: string
+  /** Display text for an option (the value itself stays untranslated). */
+  formatOption?: (option: string) => string
 }) {
+  const t = useT()
+  const display = formatOption ?? ((o: string) => (o === 'ALL' ? t.common.all : o))
   const scrollRef = useRef<HTMLDivElement>(null)
   // Tracks a mouse click-and-drag session so we can scroll horizontally and
   // suppress the click that would otherwise fire when the drag ends.
@@ -83,7 +89,7 @@ export function FilterBar({
                   : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'
               }`}
             >
-              <span className="pointer-events-none inline-block skew-x-[8deg]">{option}</span>
+              <span className="pointer-events-none inline-block skew-x-[8deg]">{display(option)}</span>
             </button>
           )
         })}

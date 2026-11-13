@@ -10,16 +10,11 @@ import {
   removeFavourites,
   useFavourites,
 } from '@/lib/favourites'
-import { parsePrice } from '@/lib/price'
+import { formatMoney, formatYuan, parsePriceNumbers } from '@/lib/money'
+import { usePrefs, useT } from '@/lib/prefs'
 import { ViewShell } from '@/components/view-shell'
 import { ProductGrid } from '@/components/product-grid'
 import { FavouritesIntro } from '@/components/favourites-intro'
-
-function amount(text: string | null): number | null {
-  if (!text) return null
-  const n = Number(text.replace(/[^\d.]/g, ''))
-  return Number.isFinite(n) && n > 0 ? n : null
-}
 
 export function Favourites({
   items,
@@ -33,6 +28,8 @@ export function Favourites({
   onNavigate: (view: ViewId) => void
 }) {
   const { list } = useFavourites()
+  const t = useT()
+  const { lang, currency, rates } = usePrefs()
   const [introOpen, setIntroOpen] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
 
@@ -73,15 +70,13 @@ export function Favourites({
     let cny = 0
     let priced = 0
     for (const p of saved) {
-      const price = parsePrice(p.price)
-      const u = amount(price.usd)
-      const c = amount(price.cny)
-      if (u) usd += u
-      if (c) cny += c
-      if (u || c) priced++
+      const n = parsePriceNumbers(p.price, rates)
+      if (n.usd) usd += n.usd
+      if (n.cny) cny += n.cny
+      if (n.usd || n.cny) priced++
     }
     return { usd, cny, priced }
-  }, [saved])
+  }, [saved, rates])
 
   const onClear = () => {
     if (!confirmClear) {
@@ -94,22 +89,20 @@ export function Favourites({
   }
 
   return (
-    <ViewShell index="06" title="MY FAVOURITES" subtitle="THE STASH" accent="secondary" onBack={onBack} hideFavouritesLink>
+    <ViewShell index="06" title={t.section.favourites} subtitle="THE STASH" accent="fav" onBack={onBack} hideFavouritesLink>
       <FavouritesIntro open={introOpen} onClose={closeIntro} onBrowse={browse} />
 
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-xl">
           <p className="font-mono text-sm leading-relaxed text-muted-foreground">
-            {saved.length
-              ? `${saved.length} saved ${saved.length === 1 ? 'find' : 'finds'}.`
-              : 'Your saved finds live here.'}
+            {saved.length ? t.favPage.savedCount(saved.length) : t.favPage.emptyLine}
             {totals.usd > 0 && (
               <>
                 {' '}
-                Total about{' '}
-                <span className="text-secondary">${totals.usd.toFixed(2)}</span>
-                {totals.cny > 0 && <> (¥{Math.round(totals.cny)})</>} before shipping
-                {totals.priced < saved.length ? ` (${saved.length - totals.priced} without price)` : ''}.
+                {t.favPage.totalPrefix}{' '}
+                <span className="text-fav">{formatMoney(totals.usd, currency, lang, rates)}</span>
+                {totals.cny > 0 && <> ({formatYuan(Math.round(totals.cny), lang)})</>} {t.favPage.beforeShipping}
+                {totals.priced < saved.length ? ` ${t.favPage.withoutPrice(saved.length - totals.priced)}` : ''}.
               </>
             )}
           </p>
@@ -121,7 +114,7 @@ export function Favourites({
             className="flex items-center gap-1.5 font-mono text-[11px] tracking-[0.2em] text-muted-foreground hover:text-foreground"
           >
             <HelpCircle className="size-4" aria-hidden />
-            HOW IT WORKS
+            {t.favPage.howItWorks}
           </button>
           {list.length > 0 && (
             <button
@@ -132,7 +125,7 @@ export function Favourites({
               }`}
             >
               <Trash2 className="size-4" aria-hidden />
-              {confirmClear ? 'TAP AGAIN TO CLEAR' : 'CLEAR ALL'}
+              {confirmClear ? t.favPage.tapAgain : t.favPage.clearAll}
             </button>
           )}
         </div>
@@ -140,25 +133,23 @@ export function Favourites({
 
       {missing.length > 0 && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border border-dashed border-border px-4 py-3 font-mono text-xs text-muted-foreground">
-          <span>
-            {missing.length} saved {missing.length === 1 ? 'item is' : 'items are'} no longer available.
-          </span>
+          <span>{t.favPage.unavailable(missing.length)}</span>
           <button
             type="button"
             onClick={() => removeFavourites(missing)}
             className="font-bold tracking-[0.2em] text-foreground hover:text-destructive"
           >
-            REMOVE
+            {t.favPage.remove}
           </button>
         </div>
       )}
 
       {saved.length ? (
-        <ProductGrid items={saved} accent="secondary" shuffleItems={false} />
+        <ProductGrid items={saved} accent="fav" shuffleItems={false} />
       ) : (
         <div className="flex flex-col items-center gap-6 border border-dashed border-border px-6 py-20 text-center">
           <p className="font-mono text-sm tracking-[0.25em] text-muted-foreground">
-            {loading && list.length ? 'LOADING YOUR FAVOURITES…' : 'NO FAVOURITES YET'}
+            {loading && list.length ? t.favPage.loadingFavs : t.favPage.noFavs}
           </p>
           {!(loading && list.length) && (
             <div className="flex flex-wrap justify-center gap-3">
@@ -168,15 +159,15 @@ export function Favourites({
                 className="flex min-h-[48px] items-center bg-foreground px-6 font-mono text-xs font-bold tracking-[0.25em] text-background hover:bg-primary hover:text-primary-foreground"
                 style={{ transform: 'skewX(-8deg)' }}
               >
-                LATEST DROPS
+                {t.section.drops}
               </button>
               <button
                 type="button"
                 onClick={() => onNavigate('archive')}
-                className="flex min-h-[48px] items-center border border-border px-6 font-mono text-xs font-bold tracking-[0.25em] text-foreground hover:border-secondary hover:text-secondary"
+                className="flex min-h-[48px] items-center border border-border px-6 font-mono text-xs font-bold tracking-[0.25em] text-foreground hover:border-fav hover:text-fav"
                 style={{ transform: 'skewX(-8deg)' }}
               >
-                ALL ITEMS
+                {t.section.archive}
               </button>
             </div>
           )}

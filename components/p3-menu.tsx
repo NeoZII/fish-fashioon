@@ -1,10 +1,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { Heart } from 'lucide-react'
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
 import { MENU_ITEMS, recentItems, type MenuItem, type Product } from '@/lib/data'
 import { ProductSlideshow } from '@/components/product-slideshow'
 import { useFavourites } from '@/lib/favourites'
+import { useT } from '@/lib/prefs'
+import { PrefsSwitch } from '@/components/prefs-switch'
 
 export function P3Menu({
   onNavigate,
@@ -17,6 +20,7 @@ export function P3Menu({
   // Live "NEW" counter for Latest Drops; appears once the catalogue has loaded.
   const newCount = useMemo(() => recentItems(items).length, [items])
   const { count: favCount } = useFavourites()
+  const t = useT()
 
   const move = useCallback((dir: number) => {
     setActive((prev) => Math.min(MENU_ITEMS.length - 1, Math.max(0, prev + dir)))
@@ -72,7 +76,7 @@ export function P3Menu({
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          aria-label="Open Burberry Puffer Countdown"
+          aria-label={t.menu.burberryAria}
           className="group pointer-events-auto relative flex min-h-12 w-full max-w-[min(92vw,38rem)] items-center justify-center gap-3 overflow-hidden bg-destructive px-5 py-3 font-mono text-[10px] font-bold tracking-[0.18em] text-destructive-foreground shadow-[0_0_32px_-8px_var(--color-destructive)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_42px_-6px_var(--color-destructive)] active:scale-[0.98] md:min-h-14 md:px-8 md:text-sm md:tracking-[0.28em]"
           style={{ clipPath: 'polygon(3% 0, 100% 0, 97% 100%, 0 100%)' }}
         >
@@ -80,24 +84,26 @@ export function P3Menu({
           <span className="relative flex size-2.5 shrink-0 items-center justify-center rounded-full bg-current" aria-hidden>
             <span className="size-1 rounded-full bg-destructive-foreground" />
           </span>
-          <span className="relative">BURBERRY PUFFER LINKS</span>
+          <span className="relative">{t.section.countdown}</span>
         </motion.button>
       </div>
 
       {/* menu list */}
       <nav
         className="relative z-20 flex flex-col gap-2 pl-6 md:gap-3 md:pl-24"
-        aria-label="Main menu"
+        aria-label={t.menu.mainMenu}
       >
         {MENU_ITEMS.map((item, i) => {
           const isActive = i === active
+          const label = t.section[item.id]
           return (
             <motion.button
               key={item.id}
               type="button"
               custom={i}
               initial={{ opacity: 0, x: 80 }}
-              animate={{ opacity: isActive ? 1 : 0.45, x: 0 }}
+              // My Favourites stays fully lit so it always stands out.
+              animate={{ opacity: isActive || item.glowFav ? 1 : 0.45, x: 0 }}
               transition={{
                 opacity: { duration: 0.35 },
                 x: { duration: 0.5, delay: 0.4 + i * 0.09, ease: [0.22, 1, 0.36, 1] },
@@ -107,10 +113,10 @@ export function P3Menu({
               onClick={() => onNavigate(item.id)}
               aria-label={
                 item.id === 'drops' && newCount > 0
-                  ? `${item.label}, ${newCount} new this week`
+                  ? t.menu.ariaNew(label, newCount)
                   : item.id === 'favourites' && favCount > 0
-                    ? `${item.label}, ${favCount} saved`
-                    : item.label
+                    ? t.menu.ariaSaved(label, favCount)
+                    : label
               }
               style={{ marginLeft: item.offsetX }}
               className="group relative flex items-center gap-4 text-left outline-none"
@@ -119,19 +125,27 @@ export function P3Menu({
               {/* active glow */}
               <motion.span
                 aria-hidden
-                className="pointer-events-none absolute -inset-x-8 -inset-y-4 -z-10 rounded-full bg-primary/25 blur-2xl"
+                className={`pointer-events-none absolute -inset-x-8 -inset-y-4 -z-10 rounded-full blur-2xl ${
+                  item.glowFav ? 'bg-fav/30' : 'bg-primary/25'
+                }`}
                 animate={{ opacity: isActive ? 1 : 0 }}
                 transition={{ duration: 0.3 }}
               />
 
               <span
                 className="relative block"
-                style={{ transform: `skewX(${item.skewX}deg) skewY(${item.skewY}deg)` }}
+                style={{
+                  transform: `skewX(${item.skewX}deg) skewY(${item.skewY}deg)`,
+                  // Scales down on phones (vw-driven), capped at the original
+                  // desktop size (fontSize/16rem) so PC sizing is unchanged.
+                  fontSize: `clamp(1.75rem, ${(item.fontSize / 8).toFixed(1)}vw, ${item.fontSize / 16}rem)`,
+                }}
               >
                 {/* white highlight slab behind active label */}
                 <motion.span
                   aria-hidden
-                  className="absolute inset-y-1 -left-3 -right-6 -z-10 bg-foreground"
+                  // Insets in em so the slab covers the letters at every size.
+                  className={`absolute inset-y-[0.04em] -left-3 -right-6 -z-10 ${item.glowFav ? 'bg-fav' : 'bg-foreground'}`}
                   style={{ clipPath: 'polygon(0 0, 100% 0, 94% 100%, 4% 100%)', originX: 0 }}
                   initial={false}
                   animate={{ scaleX: isActive ? 1 : 0 }}
@@ -139,33 +153,46 @@ export function P3Menu({
                 />
 
                 {/* pulsing glow for the highlighted item (CSS-driven) */}
-                {item.glowRed && !isActive && (
+                {(item.glowRed || item.glowFav) && !isActive && (
                   <span
                     aria-hidden
-                    className="p3-menu-glow pointer-events-none absolute -inset-x-4 -inset-y-2 -z-10 rounded-full bg-primary/40 blur-2xl"
+                    className={`p3-menu-glow pointer-events-none absolute -inset-x-4 -inset-y-2 -z-10 rounded-full blur-2xl ${
+                      item.glowFav ? 'bg-fav/35' : 'bg-primary/40'
+                    }`}
                   />
                 )}
 
                 <span
-                  className={`block font-display italic leading-[0.85] tracking-wide transition-colors duration-150 ${
+                  className={`flex items-center gap-[0.22em] font-display italic leading-[0.85] tracking-wide transition-colors duration-150 ${
                     isActive
-                      ? 'text-background'
-                      : item.glowRed
-                        ? 'text-primary'
-                        : item.redAccent
-                          ? 'text-primary/75'
-                          : 'text-foreground/80'
+                      ? item.glowFav
+                        ? 'text-fav-foreground'
+                        : 'text-background'
+                      : item.glowFav
+                        ? 'text-fav'
+                        : item.glowRed
+                          ? 'text-primary'
+                          : item.redAccent
+                            ? 'text-primary/75'
+                            : 'text-foreground/80'
                   }`}
                   style={{
-                    // Scales down on phones (vw-driven), capped at the original
-                    // desktop size (fontSize/16rem) so PC sizing is unchanged.
-                    fontSize: `clamp(1.75rem, ${(item.fontSize / 8).toFixed(1)}vw, ${item.fontSize / 16}rem)`,
-                    ...(item.glowRed && !isActive
-                      ? { textShadow: '0 0 18px color-mix(in oklch, var(--primary) 80%, transparent)' }
-                      : {}),
+                    ...(!isActive && item.glowFav
+                      ? { textShadow: '0 0 20px color-mix(in oklch, var(--fav) 85%, transparent)' }
+                      : !isActive && item.glowRed
+                        ? { textShadow: '0 0 18px color-mix(in oklch, var(--primary) 80%, transparent)' }
+                        : {}),
                   }}
                 >
-                  {item.label}
+                  {item.glowFav && (
+                    <Heart
+                      aria-hidden
+                      className="size-[0.62em] shrink-0 -translate-y-[0.04em]"
+                      fill="currentColor"
+                      strokeWidth={0}
+                    />
+                  )}
+                  <span>{label}</span>
                 </span>
               </span>
 
@@ -176,7 +203,7 @@ export function P3Menu({
                   initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
                   animate={{ opacity: 1, scale: 1, rotate: -8 }}
                   transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
-                  className="shrink-0 self-start bg-secondary px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.18em] text-secondary-foreground md:text-xs"
+                  className="shrink-0 self-start bg-fav px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.18em] text-fav-foreground shadow-[0_0_18px_-4px_var(--color-fav)] md:text-xs"
                   style={{ clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)' }}
                 >
                   ♥ {favCount}
@@ -193,7 +220,7 @@ export function P3Menu({
                   className="shrink-0 self-start bg-destructive px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.18em] text-destructive-foreground md:text-xs"
                   style={{ clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)' }}
                 >
-                  {newCount} NEW
+                  {t.menu.newBadge(newCount)}
                 </motion.span>
               )}
 
@@ -201,6 +228,16 @@ export function P3Menu({
           )
         })}
       </nav>
+
+      {/* language + currency */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9, duration: 0.5 }}
+        className="absolute bottom-5 left-5 z-30 md:bottom-6 md:left-8"
+      >
+        <PrefsSwitch align="left" direction="up" />
+      </motion.div>
 
       {/* hint */}
       <motion.div
@@ -213,11 +250,11 @@ export function P3Menu({
       >
         <div className="flex items-center gap-2">
           <kbd className="rounded-sm border border-border px-1.5 py-0.5">↑↓</kbd>
-          <span>NAVIGATE</span>
+          <span>{t.menu.navigate}</span>
         </div>
         <div className="flex items-center gap-2">
           <kbd className="rounded-sm border border-border px-1.5 py-0.5">↵</kbd>
-          <span>CONFIRM</span>
+          <span>{t.menu.confirm}</span>
         </div>
       </motion.div>
     </div>

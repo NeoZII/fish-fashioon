@@ -7,7 +7,7 @@
 @theme inline {
   --font-sans: var(--font-geist);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-anton);
+  --font-display: var(--font-anton), var(--font-oswald);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -24,6 +24,8 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-fav: var(--fav);
+  --color-fav-foreground: var(--fav-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -62,6 +64,11 @@
   --accent-foreground: oklch(0.99 0 0);
 
   --destructive: oklch(0.52 0.21 22);
+
+  /* hot pink: the "favourites" colour (hearts, My Favourites). Sits opposite
+     the cyan/blue on the colour wheel so saved things always pop. */
+  --fav: oklch(0.72 0.21 352);
+  --fav-foreground: oklch(0.16 0.03 352);
 
   --border: oklch(0.24 0.006 260);
   --input: oklch(0.24 0.006 260);

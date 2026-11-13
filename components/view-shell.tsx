@@ -5,6 +5,8 @@ import { ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { ShareButton } from '@/components/share-button'
 import { FavouritesLink } from '@/components/favourites-link'
+import { PrefsSwitch } from '@/components/prefs-switch'
+import { useT } from '@/lib/prefs'
 
 export function ViewShell({
   title,
@@ -19,14 +21,15 @@ export function ViewShell({
   title: string
   /** Menu sub-label (e.g. "THE GALLERY"); accepted for compatibility, not rendered. */
   subtitle?: string
-  accent?: 'primary' | 'secondary'
+  accent?: 'primary' | 'secondary' | 'fav'
   onBack: () => void
   toolbar?: ReactNode
   children: ReactNode
   /** Hide the header heart shortcut (on the Favourites page itself). */
   hideFavouritesLink?: boolean
 }) {
-  const barClass = accent === 'primary' ? 'bg-primary' : 'bg-secondary'
+  const t = useT()
+  const barClass = accent === 'fav' ? 'bg-fav' : accent === 'primary' ? 'bg-primary' : 'bg-secondary'
 
   return (
     <div className="relative min-h-dvh w-full overflow-hidden">
@@ -41,12 +44,13 @@ export function ViewShell({
             className="group flex items-center gap-2 font-mono text-xs tracking-[0.25em] text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
-            MENU
+            {t.common.menu}
           </button>
           <div className="flex items-center gap-2">
+            <PrefsSwitch />
             {/* Favourites are per-browser, so that page has no shortcut or share. */}
             {!hideFavouritesLink && <FavouritesLink />}
-            {!hideFavouritesLink && <ShareButton title={`${title} · Fashion Sea`} align="right" />}
+            {!hideFavouritesLink && <ShareButton title={`${title} · Fashion Sea`} align="right" compact />}
           </div>
         </header>
         {toolbar ? <div className="border-t border-border">{toolbar}</div> : null}
@@ -58,7 +62,7 @@ export function ViewShell({
           initial={{ opacity: 0, x: -60, skewX: -8 }}
           animate={{ opacity: 1, x: 0, skewX: -6 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display text-[15vw] italic leading-[0.8] tracking-tight text-foreground md:text-[9vw]"
+          className="font-display text-[15vw] italic leading-[0.8] tracking-tight text-foreground text-balance [overflow-wrap:anywhere] md:text-[9vw]"
         >
           {title}
         </motion.h1>

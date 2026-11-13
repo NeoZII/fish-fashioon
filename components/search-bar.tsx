@@ -2,6 +2,7 @@
 
 import { Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useT } from '@/lib/prefs'
 
 /**
  * Minimal live-search input. Keeps its own draft value for responsive typing
@@ -11,7 +12,7 @@ import { useEffect, useState } from 'react'
 export function SearchBar({
   onChange,
   accent = 'primary',
-  placeholder = 'Search items...',
+  placeholder,
   delay = 250,
 }: {
   onChange: (value: string) => void
@@ -20,6 +21,7 @@ export function SearchBar({
   delay?: number
 }) {
   const [draft, setDraft] = useState('')
+  const t = useT()
 
   useEffect(() => {
     const id = window.setTimeout(() => onChange(draft.trim()), delay)
@@ -41,15 +43,15 @@ export function SearchBar({
           type="text"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder={placeholder}
-          aria-label="Search items"
+          placeholder={placeholder ?? t.common.searchPlaceholder}
+          aria-label={t.common.searchAria}
           className="skew-x-[8deg] w-full bg-transparent py-2.5 font-mono text-[13px] tracking-wide text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
         {draft && (
           <button
             type="button"
             onClick={() => setDraft('')}
-            aria-label="Clear search"
+            aria-label={t.common.clearSearch}
             className="flex size-6 shrink-0 skew-x-[8deg] items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <X className="size-4" />

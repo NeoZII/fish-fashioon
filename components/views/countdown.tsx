@@ -4,33 +4,36 @@ import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ViewShell } from '@/components/view-shell'
+import { useT } from '@/lib/prefs'
 
 // ---- Edit the drop here ----------------------------------------------------
 const DROP = {
-  title: 'BURBERRY PUFFER LINKS',
   // Friday 16 Oct 2026, 20:00 Brussels time (CEST = UTC+2)
   dropAt: '2026-10-16T20:00:00+02:00',
   dateLabel: 'FRIDAY 16 OCT · 20:00',
   // Upload your photo to /public/drops/countdown.jpg (falls back to a placeholder)
   image: '/drops/countdown.png',
+  // `colour` picks the translated label (see countdown.* in lib/i18n.ts).
   links: [
-    { label: 'BURBERRY PUFFER IN BLACK', href: 'https://ikako.vip/muh3c' },
-    { label: 'BURBERRY PUFFER IN WHITE', href: 'https://ikako.vip/xchep' },
-    { label: 'BURBERRY PUFFER IN PURPLE', href: 'https://ikako.vip/nxpbx' },
-  ],
+    { colour: 'black', href: 'https://ikako.vip/muh3c' },
+    { colour: 'white', href: 'https://ikako.vip/xchep' },
+    { colour: 'purple', href: 'https://ikako.vip/nxpbx' },
+  ] as { colour: 'black' | 'white' | 'purple'; href: string }[],
 }
 // ---------------------------------------------------------------------------
+
+type Unit = 'days' | 'hrs' | 'min' | 'sec'
 
 function timeLeft(target: number) {
   const ms = Math.max(0, target - Date.now())
   return {
     done: ms === 0,
     parts: [
-      ['DAYS', Math.floor(ms / 86_400_000)],
-      ['HRS', Math.floor((ms / 3_600_000) % 24)],
-      ['MIN', Math.floor((ms / 60_000) % 60)],
-      ['SEC', Math.floor((ms / 1000) % 60)],
-    ] as [string, number][],
+      ['days', Math.floor(ms / 86_400_000)],
+      ['hrs', Math.floor((ms / 3_600_000) % 24)],
+      ['min', Math.floor((ms / 60_000) % 60)],
+      ['sec', Math.floor((ms / 1000) % 60)],
+    ] as [Unit, number][],
   }
 }
 
@@ -38,6 +41,7 @@ export function Countdown({ onBack }: { onBack: () => void }) {
   const target = new Date(DROP.dropAt).getTime()
   const [t, setT] = useState<ReturnType<typeof timeLeft> | null>(null)
   const [img, setImg] = useState(DROP.image)
+  const m = useT()
 
   useEffect(() => {
     setT(timeLeft(target))
@@ -46,11 +50,11 @@ export function Countdown({ onBack }: { onBack: () => void }) {
   }, [target])
 
   return (
-    <ViewShell title={DROP.title} accent="primary" onBack={onBack}>
+    <ViewShell title={m.section.countdown} accent="primary" onBack={onBack}>
       {/* oversized release timer */}
       <div className="mb-12 min-h-[150px]">
         {t?.done ? (
-          <p className="p3-menu-glow font-display text-7xl italic text-destructive md:text-9xl">LIVE NOW</p>
+          <p className="p3-menu-glow font-display text-7xl italic text-destructive md:text-9xl">{m.countdown.live}</p>
         ) : t ? (
           <div className="flex flex-wrap gap-3 md:gap-4" role="timer">
             {t.parts.map(([label, value], i) => (
@@ -64,7 +68,9 @@ export function Countdown({ onBack }: { onBack: () => void }) {
                 <span className="font-display text-6xl italic leading-none tabular-nums text-destructive md:text-8xl lg:text-9xl">
                   {String(value).padStart(2, '0')}
                 </span>
-                <span className="mt-3 font-mono text-[10px] font-bold tracking-[0.25em] text-destructive md:text-xs">{label}</span>
+                <span className="mt-3 font-mono text-[10px] font-bold tracking-[0.25em] text-destructive md:text-xs">
+                  {m.countdown[label]}
+                </span>
               </motion.div>
             ))}
           </div>
@@ -75,7 +81,7 @@ export function Countdown({ onBack }: { onBack: () => void }) {
       <div className="mb-8 grid gap-3 md:grid-cols-3">
         {DROP.links.map((link, i) => (
           <motion.a
-            key={link.label}
+            key={link.colour}
             href={link.href}
             target={link.href !== '#' ? '_blank' : undefined}
             rel={link.href !== '#' ? 'noopener noreferrer' : undefined}
@@ -86,7 +92,7 @@ export function Countdown({ onBack }: { onBack: () => void }) {
           >
             <span className="absolute -right-10 -top-10 size-28 rounded-full border border-current/20" aria-hidden />
             <span className="relative max-w-[15rem] font-mono text-xs font-bold uppercase leading-[1.8] tracking-[0.15em]">
-              {link.label}
+              {m.countdown[link.colour]}
             </span>
             <ArrowUpRight className="relative size-6 shrink-0 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
           </motion.a>
@@ -104,12 +110,12 @@ export function Countdown({ onBack }: { onBack: () => void }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={img}
-            alt={DROP.title}
+            alt={m.countdown.caption}
             onError={() => setImg('/placeholder.jpg')}
             className="h-full w-full object-contain p-2 transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent px-5 pb-5 pt-16">
-            <p className="font-mono text-xs font-bold tracking-[0.3em] text-white">BURBERRY PUFFER</p>
+            <p className="font-mono text-xs font-bold tracking-[0.3em] text-white">{m.countdown.caption}</p>
           </div>
         </motion.div>
 

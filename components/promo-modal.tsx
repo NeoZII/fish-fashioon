@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useT } from '@/lib/prefs'
 
 const STORAGE_KEY = 'fishfashion:promo-seen'
 const OFFER_URL = 'https://ikako.vip/r/dqh2u'
@@ -14,6 +15,7 @@ const COUPON_CODE = 'Fashionsea'
 export function PromoModal() {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const t = useT()
 
   useEffect(() => {
     let show = true
@@ -77,12 +79,12 @@ export function PromoModal() {
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label="Shipping discount offer"
+      aria-label={t.promo.dialogAria}
     >
       {/* Overlay — click outside to close */}
       <button
         type="button"
-        aria-label="Close offer"
+        aria-label={t.promo.closeOffer}
         onClick={close}
         className="absolute inset-0 h-full w-full cursor-default bg-black/80 backdrop-blur-sm animate-in fade-in duration-300"
       />
@@ -93,7 +95,7 @@ export function PromoModal() {
         <button
           type="button"
           onClick={close}
-          aria-label="Close"
+          aria-label={t.common.close}
           className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-lg leading-none text-foreground/80 transition hover:bg-black/70 hover:text-foreground"
         >
           <span aria-hidden="true">&times;</span>
@@ -102,24 +104,25 @@ export function PromoModal() {
         {/* Flashy header banner */}
         <div className="promo-glow relative flex flex-col items-center gap-3 bg-primary px-6 py-8 text-center text-primary-foreground">
           <p className="font-display text-4xl uppercase leading-none tracking-tight sm:text-5xl text-balance">
-            -20% Off Shipping
+            {t.promo.headline}
           </p>
           <button
             type="button"
             onClick={copyCode}
             className="promo-pulse inline-flex items-center gap-2 rounded-full border-2 border-dashed border-primary-foreground/80 bg-primary-foreground/10 px-5 py-2 font-mono text-sm font-semibold uppercase tracking-widest transition hover:bg-primary-foreground/20"
-            aria-label={`Copy coupon code ${COUPON_CODE}`}
+            aria-label={t.promo.copyAria(COUPON_CODE)}
           >
             <span>{COUPON_CODE}</span>
-            <span className="text-xs opacity-80">{copied ? 'copied!' : 'tap to copy'}</span>
+            <span className="text-xs opacity-80">{copied ? t.promo.copied : t.promo.tapToCopy}</span>
           </button>
         </div>
 
         {/* Body */}
         <div className="flex flex-col items-center gap-5 px-6 py-7 text-center">
           <p className="text-pretty text-base leading-relaxed text-foreground">
-            Unlock <span className="font-semibold text-primary">$300+ in exclusive coupons</span> — limited time only.
-            Don&apos;t miss the drop.
+            {t.promo.bodyBefore}
+            <span className="font-semibold text-primary">{t.promo.highlight}</span>
+            {t.promo.bodyAfter}
           </p>
 
           <a
@@ -129,7 +132,7 @@ export function PromoModal() {
             onClick={close}
             className="group flex w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-4 font-display text-lg uppercase tracking-wide text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
           >
-            Claim Coupons
+            {t.promo.claim}
             <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
               &rarr;
             </span>
@@ -140,7 +143,7 @@ export function PromoModal() {
             onClick={close}
             className="text-xs uppercase tracking-widest text-muted-foreground transition hover:text-foreground"
           >
-            No thanks
+            {t.promo.noThanks}
           </button>
         </div>
       </div>

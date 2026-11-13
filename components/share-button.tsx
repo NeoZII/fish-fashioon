@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, Link2, Share2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useT } from '@/lib/prefs'
 
 type Props = {
   /** Absolute URL to share. Defaults to the current page. */
@@ -12,7 +13,10 @@ type Props = {
   /** One-line message that goes with the link. */
   text?: string
   className?: string
+  /** Button text (defaults to "SHARE" in the visitor's language). */
   label?: string
+  /** Icon only on phones (for crowded headers). */
+  compact?: boolean
   /** Preview image to warm up before the link is shared (so apps get it instantly). */
   previewImage?: string
   /** Which edge of the button the panel lines up with. */
@@ -30,7 +34,9 @@ const enc = encodeURIComponent
  * Every link carries the page's Open Graph tags, so it unfurls into a preview
  * card on all of these platforms.
  */
-export function ShareButton({ url, title, text, className = '', label = 'SHARE', previewImage, align = 'left' }: Props) {
+export function ShareButton({ url, title, text, className = '', label, previewImage, align = 'left', compact = false }: Props) {
+  const t = useT()
+  const buttonLabel = label ?? t.common.share
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -105,11 +111,12 @@ export function ShareButton({ url, title, text, className = '', label = 'SHARE',
         onClick={onShare}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-label={compact ? buttonLabel : undefined}
         className="flex min-h-[44px] items-center gap-2 border border-border bg-background/60 px-4 font-mono text-[11px] font-bold tracking-[0.25em] text-foreground transition-colors hover:border-primary hover:text-primary"
         style={{ transform: 'skewX(-8deg)' }}
       >
         <Share2 className="size-4" aria-hidden />
-        {label}
+        <span className={compact ? 'hidden sm:inline' : undefined}>{buttonLabel}</span>
       </button>
 
       <AnimatePresence>
@@ -130,7 +137,7 @@ export function ShareButton({ url, title, text, className = '', label = 'SHARE',
             >
               <span className="flex items-center gap-2">
                 {copied ? <Check className="size-4 text-primary" /> : <Link2 className="size-4" />}
-                {copied ? 'COPIED' : 'COPY LINK'}
+                {copied ? t.common.copied : t.common.copyLink}
               </span>
               <span className="text-[9px] font-normal tracking-[0.1em] text-muted-foreground">
                 DISCORD · IG · TIKTOK

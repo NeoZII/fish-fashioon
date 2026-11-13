@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { ItemView } from '@/components/item-view'
 import { itemPath, itemSlug } from '@/lib/item-key'
 import { findItemBySlug } from '@/lib/item-lookup'
+import { getRates } from '@/lib/fx'
 import { parsePrice } from '@/lib/price'
 import { similarItems } from '@/lib/similar'
 import { SITE_NAME, SITE_URL } from '@/lib/site'
@@ -40,13 +41,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ItemPage({ params }: Props) {
   const { slug } = await params
-  const { items, item } = await findItemBySlug(slug)
+  const [{ items, item }, rates] = await Promise.all([findItemBySlug(slug), getRates()])
   if (!item) notFound()
 
   // Same item, old/edited slug text: send to the canonical URL.
   if (decodeURIComponent(slug) !== itemSlug(item)) permanentRedirect(itemPath(item))
 
   return (
-    <ItemView item={item} similar={similarItems(items, item)} shareUrl={`${SITE_URL}${itemPath(item)}`} />
+    <ItemView
+      item={item}
+      similar={similarItems(items, item)}
+      shareUrl={`${SITE_URL}${itemPath(item)}`}
+      rates={rates}
+    />
   )
 }

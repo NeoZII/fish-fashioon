@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ViewId } from '@/lib/data'
-import { SECTION_META, VIEW_PATHS, viewFromPath } from '@/lib/sections'
+import { VIEW_PATHS, viewFromPath } from '@/lib/sections'
 import { useGlobalItems } from '@/hooks/use-global-items'
 import { P3Menu } from '@/components/p3-menu'
 import { PromoModal } from '@/components/promo-modal'
@@ -16,9 +16,11 @@ import { Socials } from '@/components/views/socials'
 import { Countdown } from '@/components/views/countdown'
 import { Favourites } from '@/components/views/favourites'
 import { NavContext } from '@/components/nav-context'
+import { useT } from '@/lib/prefs'
 
 export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
   const { globalItems, loading } = useGlobalItems()
+  const t = useT()
   // When this component remounts after a client-side navigation (e.g. Back
   // from an item page), trust the address bar over the route's default view.
   const [view, setView] = useState<ViewId>(() =>
@@ -56,8 +58,8 @@ export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
 
   // Keep the browser tab title in sync with the section on screen.
   useEffect(() => {
-    document.title = view === 'menu' ? 'Fashion Sea' : `${SECTION_META[view].title} · Fashion Sea`
-  }, [view])
+    document.title = view === 'menu' ? 'Fashion Sea' : `${t.tab[view]} · Fashion Sea`
+  }, [view, t])
 
   // Browser Back/Forward between sections plays the same curtain transition.
   useEffect(() => {

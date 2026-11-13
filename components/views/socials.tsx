@@ -4,12 +4,14 @@ import { motion } from 'framer-motion'
 import { ArrowUpRight, Clock } from 'lucide-react'
 import { SOCIALS } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
+import { useT } from '@/lib/prefs'
 
 export function Socials({ onBack }: { onBack: () => void }) {
+  const t = useT()
   return (
-    <ViewShell index="05" title="SOCIALS" subtitle="THE NETWORK" accent="secondary" onBack={onBack}>
+    <ViewShell index="05" title={t.section.socials} subtitle="THE NETWORK" accent="secondary" onBack={onBack}>
       <div className="mb-10 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-        {'Find me everywhere.'}
+        {t.socials.intro}
       </div>
       <div className="flex flex-col divide-y divide-border border-y border-border">
         {SOCIALS.map((s, i) => {
@@ -56,7 +58,9 @@ export function Socials({ onBack }: { onBack: () => void }) {
                 <div className="text-right">
                   {s.handle && <div className="hidden font-mono text-sm text-foreground sm:block">{s.handle}</div>}
                   {s.meta && (
-                    <div className="font-mono text-[11px] tracking-widest text-secondary">{s.meta}</div>
+                    <div className="font-mono text-[11px] tracking-widest text-secondary">
+                      {s.comingSoon ? t.socials.comingSoon : s.meta}
+                    </div>
                   )}
                 </div>
                 {isLive ? (
@@ -80,7 +84,7 @@ export function Socials({ onBack }: { onBack: () => void }) {
         transition={{ delay: 0.7 }}
         className="mt-12 font-mono text-xs tracking-[0.3em] text-muted-foreground"
       >
-        FashionSea — © 2026 ALL SIGNALS RESERVED
+        {t.socials.footer}
       </motion.div>
     </ViewShell>
   )

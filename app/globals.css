@@ -24,6 +24,8 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-fav: var(--fav);
+  --color-fav-foreground: var(--fav-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -63,9 +65,21 @@
 
   --destructive: oklch(0.52 0.21 22);
 
+  /* hot pink: the "favourites" colour (hearts, My Favourites). Sits opposite
+     the cyan/blue on the colour wheel so saved things always pop. */
+  --fav: oklch(0.72 0.21 352);
+  --fav-foreground: oklch(0.16 0.03 352);
+
   --border: oklch(0.24 0.006 260);
   --input: oklch(0.24 0.006 260);
   --ring: oklch(0.75 0.14 215);
+}
+
+/* Anton has no Cyrillic letters, so the Russian interface uses Oswald (same
+   condensed-bold poster feel) for all display text. <html lang> follows the
+   visitor's language (lib/prefs.ts). */
+html:lang(ru) .font-display {
+  font-family: var(--font-oswald);
 }
 
 @layer base {

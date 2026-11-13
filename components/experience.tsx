@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ViewId } from '@/lib/data'
-import { SECTION_META, VIEW_PATHS, viewFromPath } from '@/lib/sections'
+import { VIEW_PATHS, viewFromPath } from '@/lib/sections'
 import { useGlobalItems } from '@/hooks/use-global-items'
 import { P3Menu } from '@/components/p3-menu'
 import { PromoModal } from '@/components/promo-modal'
@@ -16,9 +16,11 @@ import { Socials } from '@/components/views/socials'
 import { Countdown } from '@/components/views/countdown'
 import { Favourites } from '@/components/views/favourites'
 import { NavContext } from '@/components/nav-context'
+import { useT } from '@/lib/prefs'
 
 export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
   const { globalItems, loading } = useGlobalItems()
+  const t = useT()
   // When this component remounts after a client-side navigation (e.g. Back
   // from an item page), trust the address bar over the route's default view.
   const [view, setView] = useState<ViewId>(() =>
@@ -54,10 +56,19 @@ export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
 
   const navigate = useCallback((target: ViewId) => transition(target, true), [transition])
 
-  // Keep the browser tab title in sync with the section on screen.
+  // Keep the browser tab title in sync with the section on screen, in the
+  // visitor's language. Next.js writes the (English) metadata title into
+  // <head> after the page starts, so re-apply ours whenever it gets replaced.
   useEffect(() => {
-    document.title = view === 'menu' ? 'Fashion Sea' : `${SECTION_META[view].title} · Fashion Sea`
-  }, [view])
+    const title = view === 'menu' ? 'Fashion Sea' : `${t.tab[view]} · Fashion Sea`
+    const apply = () => {
+      if (document.title !== title) document.title = title
+    }
+    apply()
+    const observer = new MutationObserver(apply)
+    observer.observe(document.head, { childList: true, subtree: true, characterData: true })
+    return () => observer.disconnect()
+  }, [view, t])
 
   // Browser Back/Forward between sections plays the same curtain transition.
   useEffect(() => {

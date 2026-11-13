@@ -1,4 +1,6 @@
 import { getCatalogue, CATALOGUE_REVALIDATE } from '@/lib/catalogue'
+import { getRates } from '@/lib/fx'
+import { FX_HEADER } from '@/lib/money'
 
 /**
  * The catalogue, served as JSON and cached at Vercel's edge.
@@ -16,7 +18,8 @@ import { getCatalogue, CATALOGUE_REVALIDATE } from '@/lib/catalogue'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const items = await getCatalogue()
+  // Exchange rates ride along in a header (no extra request for the browser).
+  const [items, rates] = await Promise.all([getCatalogue(), getRates()])
 
   if (!items.length) {
     return Response.json(
@@ -28,6 +31,7 @@ export async function GET() {
   return Response.json(items, {
     headers: {
       'Cache-Control': `public, max-age=60, s-maxage=${CATALOGUE_REVALIDATE}, stale-while-revalidate=86400`,
+      ...(rates ? { [FX_HEADER]: JSON.stringify(rates) } : {}),
     },
   })
 }

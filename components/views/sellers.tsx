@@ -8,11 +8,15 @@ import { FilterBar } from '@/components/filter-bar'
 import { MobileFilters } from '@/components/mobile-filters'
 import { SearchBar } from '@/components/search-bar'
 import { ProductGrid } from '@/components/product-grid'
+import { useT } from '@/lib/prefs'
+import { categoryLabel } from '@/lib/i18n'
 
 export function Sellers({ items, onBack }: { items: Product[]; onBack: () => void }) {
   const [seller, setSeller] = useState<string>('ALL')
   const [category, setCategory] = useState<string>('ALL')
   const [query, setQuery] = useState('')
+  const t = useT()
+  const catLabel = (c: string) => categoryLabel(t, c)
 
   // Sellers tab only ever deals with rows that have a non-empty Seller (col H).
   const withSeller = useMemo(() => items.filter((i) => i.seller.trim() !== ''), [items])
@@ -33,29 +37,45 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
   return (
     <ViewShell
       index="03"
-      title="SELLERS"
+      title={t.section.sellers}
       subtitle="THE PLUGS"
       accent="primary"
       onBack={onBack}
       toolbar={
         <div className="flex flex-col divide-y divide-border">
-          <SearchBar onChange={handleSearch} accent="primary" />
+          <SearchBar onChange={handleSearch} accent="primary" placeholder={t.common.searchPlaceholder} />
           <div className="hidden flex-col divide-y divide-border md:flex">
-            <FilterBar label="SELLER" options={options} active={seller} onChange={setSeller} accent="primary" />
+            <FilterBar label={t.common.seller} options={options} active={seller} onChange={setSeller} accent="primary" />
             <FilterBar
-              label="CATEGORY"
+              label={t.common.category}
               options={categories}
               active={category}
               onChange={setCategory}
               accent="primary"
+              formatOption={catLabel}
             />
           </div>
           <MobileFilters
             accent="primary"
             resultCount={filtered.length}
             groups={[
-              { id: 'seller', label: 'SELLER', options: options, active: seller, onChange: setSeller, searchable: true },
-              { id: 'category', label: 'CATEGORY', options: categories, active: category, onChange: setCategory },
+              {
+                id: 'seller',
+                label: t.common.seller,
+                options: options,
+                active: seller,
+                onChange: setSeller,
+                searchable: true,
+                searchPlaceholder: t.filters.findSeller,
+              },
+              {
+                id: 'category',
+                label: t.common.category,
+                options: categories,
+                active: category,
+                onChange: setCategory,
+                formatOption: catLabel,
+              },
             ]}
           />
         </div>
@@ -63,17 +83,18 @@ export function Sellers({ items, onBack }: { items: Product[]; onBack: () => voi
     >
       <div className="mb-8 flex items-end justify-between gap-4">
         <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-          {'Every plug in one place, every seller verified before they touch the feed.'}
+          {t.sellers.intro}
         </p>
         <span className="shrink-0 font-mono text-xs tabular-nums text-primary">
-          {String(filtered.length).padStart(2, '0')} ITEMS
+          {filtered.length < 10 ? '0' : ''}
+          {t.common.items(filtered.length)}
         </span>
       </div>
       <ProductGrid
         items={filtered}
         accent="primary"
         shuffleItems={!query}
-        emptyMessage={query ? 'NO ITEMS FOUND' : 'NOTHING IN THIS DRAWER YET'}
+        emptyMessage={query ? t.common.noItemsFound : t.common.emptyDrawer}
       />
     </ViewShell>
   )

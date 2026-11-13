@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { type Product } from '@/lib/data'
 import { cleanCatalogue } from '@/lib/clean-catalogue'
 import { CATALOGUE_ENDPOINT } from '@/lib/catalogue-endpoint'
+import { FX_HEADER } from '@/lib/money'
+import { setRates } from '@/lib/prefs'
 
 /** Abort a single attempt after this long so loading can never hang. */
 const ATTEMPT_TIMEOUT_MS = 15000
@@ -26,6 +28,11 @@ async function fetchOnce(signal: AbortSignal): Promise<Product[]> {
   // page, so the browser hands this call the already-downloading response.
   const res = await fetch(CATALOGUE_ENDPOINT, { signal, credentials: 'same-origin' })
   if (!res.ok) throw new Error(`Catalogue responded ${res.status}`)
+  try {
+    setRates(JSON.parse(res.headers.get(FX_HEADER) || 'null'))
+  } catch {
+    // Missing/garbled rates header: keep the fallback rates.
+  }
   return cleanCatalogue(await res.json())
 }
 

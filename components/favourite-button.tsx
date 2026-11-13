@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { Heart } from 'lucide-react'
 import { toggleFavourite, useFavourites } from '@/lib/favourites'
+import { useT } from '@/lib/prefs'
 
 /** Heart toggle for one item. `variant="card"` is the round icon on product cards. */
 export function FavouriteButton({
@@ -17,6 +18,7 @@ export function FavouriteButton({
   className?: string
 }) {
   const { isFavourite } = useFavourites()
+  const t = useT()
   const saved = isFavourite(itemKey)
 
   const onClick = (e: React.MouseEvent) => {
@@ -25,7 +27,7 @@ export function FavouriteButton({
     toggleFavourite(itemKey)
   }
 
-  const label = saved ? `Remove ${title} from My Favourites` : `Save ${title} to My Favourites`
+  const label = saved ? t.fav.removeAria(title) : t.fav.addAria(title)
 
   if (variant === 'large') {
     return (
@@ -36,15 +38,15 @@ export function FavouriteButton({
         aria-label={label}
         className={`flex min-h-[44px] items-center gap-2 border px-4 font-mono text-[11px] font-bold tracking-[0.25em] transition-colors ${
           saved
-            ? 'border-destructive bg-destructive text-destructive-foreground'
-            : 'border-border bg-background/60 text-foreground hover:border-destructive hover:text-destructive'
+            ? 'border-fav bg-fav text-fav-foreground'
+            : 'border-border bg-background/60 text-foreground hover:border-fav hover:text-fav'
         } ${className}`}
         style={{ transform: 'skewX(-8deg)' }}
       >
         <motion.span key={String(saved)} initial={{ scale: 0.6 }} animate={{ scale: 1 }} className="inline-flex">
           <Heart className="size-4" fill={saved ? 'currentColor' : 'none'} aria-hidden />
         </motion.span>
-        {saved ? 'SAVED' : 'SAVE'}
+        {saved ? t.fav.saved : t.fav.save}
       </button>
     )
   }
@@ -55,9 +57,11 @@ export function FavouriteButton({
       onClick={onClick}
       aria-pressed={saved}
       aria-label={label}
-      title={saved ? 'Saved to My Favourites' : 'Save to My Favourites'}
+      title={saved ? t.fav.savedTip : t.fav.saveTip}
       className={`flex size-9 items-center justify-center rounded-full backdrop-blur-sm transition-colors ${
-        saved ? 'bg-destructive text-destructive-foreground' : 'bg-black/55 text-white hover:bg-black/75'
+        saved
+          ? 'bg-fav text-white shadow-[0_0_16px_-2px_var(--color-fav)]'
+          : 'bg-black/55 text-white hover:bg-black/75 hover:text-fav'
       } ${className}`}
     >
       <motion.span

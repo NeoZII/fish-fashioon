@@ -15,6 +15,8 @@ export type MenuItem = {
   glowRed?: boolean
   /** Tint the label slightly red (softer than glowRed). */
   redAccent?: boolean
+  /** Hot-pink "favourites" treatment: glowing label, heart, pink highlight slab. */
+  glowFav?: boolean
 }
 
 export const MENU_ITEMS: MenuItem[] = [
@@ -80,6 +82,7 @@ export const MENU_ITEMS: MenuItem[] = [
     skewX: -6,
     skewY: 4,
     offsetX: 10,
+    glowFav: true,
   },
 ]
 

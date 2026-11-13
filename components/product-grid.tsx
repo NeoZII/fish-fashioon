@@ -1,20 +1,41 @@
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion'
 import { ArrowUpRight, Check, Flag, Shuffle, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Product } from '@/lib/data'
 import { ProductImage } from '@/components/product-image'
-import { parsePrice } from '@/lib/price'
 import Link from 'next/link'
 import { itemPath } from '@/lib/item-key'
 import { FavouriteButton } from '@/components/favourite-button'
+import { categoryLabel, type Messages } from '@/lib/i18n'
+import { usePriceFormatter, useT, type DisplayPrice } from '@/lib/prefs'
 
 const BATCH_SIZE = 16
+
+type Accent = 'primary' | 'secondary' | 'fav'
+const ACCENT = {
+  primary: {
+    tag: 'bg-primary text-primary-foreground',
+    price: 'text-primary',
+    button: 'bg-primary text-primary-foreground hover:bg-foreground hover:text-background',
+  },
+  secondary: {
+    tag: 'bg-secondary text-secondary-foreground',
+    price: 'text-secondary',
+    button: 'bg-secondary text-secondary-foreground hover:bg-foreground hover:text-background',
+  },
+  fav: {
+    tag: 'bg-fav text-fav-foreground',
+    price: 'text-fav',
+    button: 'bg-fav text-fav-foreground hover:bg-foreground hover:text-background',
+  },
+} satisfies Record<Accent, { tag: string; price: string; button: string }>
 
 const REPORT_ENDPOINT =
   'https://script.google.com/macros/s/AKfycbx9v3aqzotQmh3zlbD6oVh0xdwcoiDt6Z5qzzM7L1ZLABQSNUhAbWZgJooCnRG8hN5w/exec'
 
+/** Sent to the report sheet as-is (English), whatever the visitor's language. */
 type ReportReason = 'Dead link' | 'Out of stock'
 
 const SHUFFLE_SEED_KEY = 'catalog-shuffle-seed'
@@ -100,17 +121,19 @@ export function ProductGrid({
   accent = 'primary',
   shuffleItems = true,
   showShuffle = false,
-  emptyMessage = 'NOTHING IN THIS DRAWER YET',
+  emptyMessage,
 }: {
   items: Product[]
-  accent?: 'primary' | 'secondary'
+  accent?: Accent
   /** When false, keep the incoming order (e.g. LATEST DROPS is date-sorted). */
   shuffleItems?: boolean
   /** Show the manual SHUFFLE button (Archive tab). */
   showShuffle?: boolean
-  /** Message shown when there are no items to display. */
+  /** Message shown when there are no items to display (default: "nothing here yet"). */
   emptyMessage?: string
 }) {
+  const t = useT()
+  const formatPrice = usePriceFormatter()
   const [ordered, setOrdered] = useState<Product[]>([])
   const [visible, setVisible] = useState(BATCH_SIZE)
   const [reportTarget, setReportTarget] = useState<Product | null>(null)
@@ -148,7 +171,7 @@ export function ProductGrid({
   if (items.length === 0) {
     return (
       <div className="border border-dashed border-border py-24 text-center font-mono text-sm tracking-[0.25em] text-muted-foreground">
-        {emptyMessage}
+        {emptyMessage ?? t.common.emptyDrawer}
       </div>
     )
   }
@@ -163,7 +186,7 @@ export function ProductGrid({
           <button
             type="button"
             onClick={handleShuffle}
-            aria-label="Shuffle products"
+            aria-label={t.grid.shuffleAria}
             className="group relative flex items-center gap-2.5 skew-x-[-8deg] overflow-hidden bg-secondary px-6 py-3 font-mono text-xs font-bold tracking-[0.3em] text-secondary-foreground transition-all duration-300 hover:shadow-[0_0_28px_-4px_var(--color-secondary)] active:scale-95"
           >
             {/* sheen swipe on hover */}
@@ -175,7 +198,7 @@ export function ProductGrid({
             >
               <Shuffle className="size-4" />
             </motion.span>
-            <span className="skew-x-[8deg]">SHUFFLE</span>
+            <span className="skew-x-[8deg]">{t.grid.shuffle}</span>
           </button>
         </div>
       )}
@@ -187,12 +210,15 @@ export function ProductGrid({
             product={item}
             index={i % BATCH_SIZE}
             accent={accent}
+            t={t}
+            price={formatPrice(item.price)}
             onReport={() => setReportTarget(item)}
           />
         ))}
       </div>
 
       <ReportModal
+        t={t}
         product={reportTarget}
         onClose={() => setReportTarget(null)}
         onReported={handleReported}
@@ -211,7 +237,7 @@ export function ProductGrid({
           >
             <div className="flex items-center gap-2 skew-x-[-6deg] bg-foreground px-5 py-3 font-mono text-xs font-bold tracking-[0.2em] text-background shadow-lg">
               <Check className="size-4 shrink-0" />
-              THANKS, REPORTED!
+              {t.grid.reported}
             </div>
           </motion.div>
         )}
@@ -225,13 +251,9 @@ export function ProductGrid({
           <button
             type="button"
             onClick={() => setVisible((v) => v + BATCH_SIZE)}
-            className={`skew-x-[-8deg] px-8 py-3 font-mono text-xs font-bold tracking-[0.3em] transition-colors ${
-              accent === 'primary'
-                ? 'bg-primary text-primary-foreground hover:bg-foreground hover:text-background'
-                : 'bg-secondary text-secondary-foreground hover:bg-foreground hover:text-background'
-            }`}
+            className={`skew-x-[-8deg] px-8 py-3 font-mono text-xs font-bold tracking-[0.3em] transition-colors ${ACCENT[accent].button}`}
           >
-            LOAD MORE
+            {t.grid.loadMore}
           </button>
         </div>
       )}
@@ -239,32 +261,48 @@ export function ProductGrid({
   )
 }
 
+const TILT_SPRING = { stiffness: 220, damping: 18 }
+
 function ProductCard({
   product,
   index,
   accent,
+  t,
+  price,
   onReport,
 }: {
   product: Product
   index: number
-  accent: 'primary' | 'secondary'
+  accent: Accent
+  t: Messages
+  price: DisplayPrice
   onReport: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [tilt, setTilt] = useState({ rx: 0, ry: 0 })
+  // Mouse tilt runs on motion values: no React re-render per mouse move.
+  const tiltX = useMotionValue(0)
+  const tiltY = useMotionValue(0)
+  const rotateX = useSpring(tiltX, TILT_SPRING)
+  const rotateY = useSpring(tiltY, TILT_SPRING)
 
-  const handleMove = (e: React.MouseEvent) => {
+  const handleMove = (e: React.PointerEvent) => {
+    if (e.pointerType !== 'mouse') return
     const el = ref.current
     if (!el) return
     const rect = el.getBoundingClientRect()
     const px = (e.clientX - rect.left) / rect.width - 0.5
     const py = (e.clientY - rect.top) / rect.height - 0.5
-    setTilt({ rx: -py * 8, ry: px * 8 })
+    tiltX.set(-py * 8)
+    tiltY.set(px * 8)
+  }
+  const resetTilt = () => {
+    tiltX.set(0)
+    tiltY.set(0)
   }
 
-  const tagClass = accent === 'primary' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-  const priceClass = accent === 'primary' ? 'text-primary' : 'text-secondary'
-  const price = parsePrice(product.price)
+  const tagClass = ACCENT[accent].tag
+  const priceClass = ACCENT[accent].price
+  const mainPrice = price.main ?? (price.cny ? null : price.raw)
 
   return (
     <motion.div
@@ -275,18 +313,16 @@ function ProductCard({
     >
       <motion.div
         ref={ref}
-        onMouseMove={handleMove}
-        onMouseLeave={() => setTilt({ rx: 0, ry: 0 })}
-        animate={{ rotateX: tilt.rx, rotateY: tilt.ry }}
-        transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-        style={{ transformStyle: 'preserve-3d' }}
+        onPointerMove={handleMove}
+        onPointerLeave={resetTilt}
+        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
         className="group flex h-full flex-col overflow-hidden rounded-md border border-border bg-card"
       >
         <div className="relative aspect-[4/5] overflow-hidden">
           <Link
             href={itemPath(product)}
             prefetch={false}
-            aria-label={`View ${product.title}`}
+            aria-label={t.grid.viewAria(product.title)}
             className="absolute inset-0 z-0"
           />
           <ProductImage
@@ -300,14 +336,14 @@ function ProductCard({
           <span
             className={`pointer-events-none absolute left-2 top-2 skew-x-[-8deg] px-2 py-0.5 font-mono text-[9px] font-bold tracking-[0.2em] ${tagClass}`}
           >
-            {product.category}
+            {categoryLabel(t, product.category)}
           </span>
           <FavouriteButton itemKey={product.key} title={product.title} className="absolute right-2 top-2 z-10" />
           <button
             type="button"
             onClick={onReport}
-            aria-label={`Report ${product.title}`}
-            title="Report this item"
+            aria-label={t.grid.reportAria(product.title)}
+            title={t.grid.reportTitle}
             className="absolute right-3 top-12 z-10 flex size-7 items-center justify-center rounded-full bg-black/55 text-white/70 transition-colors hover:bg-black/75 hover:text-white"
           >
             <Flag className="size-3.5" />
@@ -323,13 +359,17 @@ function ProductCard({
               {product.title}
             </Link>
           </h3>
-          <div className="mt-auto flex items-end justify-between gap-2 pt-3">
-            <div className="flex min-w-0 flex-1 flex-col leading-none">
-              <span className={`truncate font-mono text-sm font-semibold tabular-nums sm:text-base ${priceClass}`}>
-                {price.usd}
-              </span>
+          {/* Phones/small tablets: price line, then a full-width BUY (prices in €
+              and longer BUY labels don't fit side by side in a half-width card). */}
+          <div className="mt-auto flex flex-col gap-2.5 pt-3 md:flex-row md:items-end md:justify-between md:gap-2">
+            <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 leading-none md:flex-1 md:flex-col md:items-start md:gap-0">
+              {mainPrice && (
+                <span className={`font-mono text-sm font-semibold tabular-nums md:truncate md:text-base ${priceClass}`}>
+                  {mainPrice}
+                </span>
+              )}
               {price.cny && (
-                <span className="mt-1 truncate font-mono text-[11px] tabular-nums text-muted-foreground">
+                <span className="font-mono text-[11px] tabular-nums text-muted-foreground md:mt-1 md:max-w-full md:truncate">
                   {price.cny}
                 </span>
               )}
@@ -338,10 +378,10 @@ function ProductCard({
               href={product.link || '#'}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex min-h-[40px] shrink-0 skew-x-[-8deg] items-center gap-1 bg-foreground px-4 py-2 font-mono text-[11px] font-bold tracking-[0.2em] text-background transition-colors hover:bg-primary hover:text-primary-foreground"
-              aria-label={`Buy ${product.title}`}
+              className="flex min-h-[40px] skew-x-[-8deg] items-center justify-center gap-1 bg-foreground px-4 py-2 font-mono text-[11px] font-bold tracking-[0.2em] text-background transition-colors hover:bg-primary hover:text-primary-foreground md:shrink-0"
+              aria-label={t.grid.buyAria(product.title)}
             >
-              BUY
+              {t.common.buy}
               <ArrowUpRight className="size-3.5" />
             </a>
           </div>
@@ -352,10 +392,12 @@ function ProductCard({
 }
 
 function ReportModal({
+  t,
   product,
   onClose,
   onReported,
 }: {
+  t: Messages
   product: Product | null
   onClose: () => void
   onReported: () => void
@@ -405,7 +447,7 @@ function ReportModal({
           onClick={onClose}
           role="dialog"
           aria-modal="true"
-          aria-label="Report product"
+          aria-label={t.grid.reportDialog}
         >
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.98 }}
@@ -418,7 +460,7 @@ function ReportModal({
             <div className="mb-4 flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground">
-                  REPORT ITEM
+                  {t.grid.reportItem}
                 </span>
                 <h3 className="mt-1 font-display text-lg italic leading-tight tracking-wide text-foreground text-balance">
                   {product.title}
@@ -427,7 +469,7 @@ function ReportModal({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close"
+                aria-label={t.common.close}
                 className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <X className="size-4" />
@@ -449,7 +491,7 @@ function ReportModal({
                         : 'border border-border bg-transparent text-foreground hover:border-primary'
                     }`}
                   >
-                    {r.toUpperCase()}
+                    {r === 'Dead link' ? t.grid.deadLink : t.grid.outOfStock}
                   </button>
                 )
               })}
@@ -461,7 +503,7 @@ function ReportModal({
               disabled={!reason || submitting}
               className="mt-5 w-full skew-x-[-6deg] bg-foreground px-4 py-3 font-mono text-xs font-bold tracking-[0.3em] text-background transition-colors hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {submitting ? 'SENDING…' : 'SUBMIT'}
+              {submitting ? t.grid.sending : t.grid.submit}
             </button>
           </motion.div>
         </motion.div>

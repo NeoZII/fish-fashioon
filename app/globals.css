@@ -7,7 +7,7 @@
 @theme inline {
   --font-sans: var(--font-geist);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-anton), var(--font-oswald);
+  --font-display: var(--font-anton);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -73,6 +73,13 @@
   --border: oklch(0.24 0.006 260);
   --input: oklch(0.24 0.006 260);
   --ring: oklch(0.75 0.14 215);
+}
+
+/* Anton has no Cyrillic letters, so the Russian interface uses Oswald (same
+   condensed-bold poster feel) for all display text. <html lang> follows the
+   visitor's language (lib/prefs.ts). */
+html:lang(ru) .font-display {
+  font-family: var(--font-oswald);
 }
 
 @layer base {

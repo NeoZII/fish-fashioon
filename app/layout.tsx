@@ -9,12 +9,11 @@ import './globals.css'
 // it isn't preloaded: the first paint only waits on Anton + Geist Mono.
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist', preload: false })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
-// Anton has no Cyrillic, so Russian headings fall through to Oswald (same
-// condensed-bold feel). Anton's metric-adjusted fallback is disabled because a
-// local fallback would otherwise catch the Cyrillic letters before Oswald.
-// Oswald isn't preloaded; browsers fetch it when Cyrillic text shows up.
-const anton = Anton({ subsets: ['latin'], weight: '400', variable: '--font-anton', adjustFontFallback: false })
-const oswald = Oswald({ subsets: ['cyrillic'], weight: '700', variable: '--font-oswald', preload: false })
+const anton = Anton({ subsets: ['latin'], weight: '400', variable: '--font-anton' })
+// Anton has no Cyrillic: the Russian interface swaps display text to Oswald
+// (see html:lang(ru) in globals.css). Not preloaded, so only Russian visitors
+// ever download it.
+const oswald = Oswald({ subsets: ['cyrillic', 'latin'], weight: '700', variable: '--font-oswald', preload: false })
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -10,6 +10,7 @@ const nextConfig = {
   // Fonts read from disk by the share-preview image routes.
   outputFileTracingIncludes: {
     '/item/**': ['./assets/fonts/**'],
+    '/list/**': ['./assets/fonts/**'],
   },
 }
 

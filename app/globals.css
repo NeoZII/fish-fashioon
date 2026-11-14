@@ -5,9 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-geist);
-  --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-anton);
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-anton), Impact, sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -80,6 +80,22 @@
    visitor's language (lib/prefs.ts). */
 html:lang(ru) .font-display {
   font-family: var(--font-oswald);
+}
+
+/* Polish letters (ł ś ż ą ę…) aren't in the basic Anton set. */
+html:lang(pl) .font-display {
+  font-family: var(--font-anton-pl), Impact, sans-serif;
+}
+
+/* Russian and Polish body text: fonts with Cyrillic / Latin Extended letters,
+   instead of the system fallback (a serif on some phones). */
+html:lang(ru) .font-mono,
+html:lang(pl) .font-mono {
+  font-family: var(--font-geist-mono-intl), ui-monospace, monospace;
+}
+html:lang(ru) .font-sans,
+html:lang(pl) .font-sans {
+  font-family: var(--font-geist-intl), system-ui, sans-serif;
 }
 
 @layer base {

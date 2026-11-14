@@ -39,7 +39,7 @@ export const SECTION_META: Record<Exclude<ViewId, 'menu'>, { title: string; desc
   },
   manifesto: {
     title: 'How to Buy',
-    description: 'Step-by-step guide to ordering with Kakobuy, from account to doorstep. Unlock the coupons first.',
+    description: 'Video and step-by-step guide to ordering with Kakobuy, from account to doorstep, plus shipping coupon codes.',
   },
   socials: {
     title: 'Socials',

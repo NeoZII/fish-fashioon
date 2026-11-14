@@ -22,6 +22,17 @@ export const maxDuration = 60
 
 const TZ = 'Europe/Brussels'
 
+/**
+ * Role pinged with every weekly post: "🆙 Website Updates" in the Fashion Sea
+ * server. Override with DISCORD_PING_ROLE_ID, or set it to "none" to stop pinging.
+ */
+const DEFAULT_PING_ROLE_ID = '1535253221789012058'
+
+function pingRoleId(): string | null {
+  const v = (process.env.DISCORD_PING_ROLE_ID ?? DEFAULT_PING_ROLE_ID).trim()
+  return /^\d{17,20}$/.test(v) ? v : null
+}
+
 function brusselsNow(): { weekday: string; hour: number } {
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'short', hour: 'numeric', hourCycle: 'h23' }).formatToParts(new Date())
   return {
@@ -59,11 +70,15 @@ function buildPost(weekId: string, data: NonNullable<Awaited<ReturnType<typeof g
     'Shipping codes: **Fashionsea** −20% · **seafinds** −$15',
   ].join('\n')
 
+  const role = pingRoleId()
+  const headline = `**Week ${week.week} drops are up: ${items.length} new ${items.length === 1 ? 'find' : 'finds'}** 🔥`
+
   return {
     username: 'Fashion Sea',
     avatar_url: `${SITE_URL}/icon.png`,
-    content: `**Week ${week.week} drops are up: ${items.length} new ${items.length === 1 ? 'find' : 'finds'}** 🔥`,
-    allowed_mentions: { parse: [] as string[] },
+    content: role ? `<@&${role}> ${headline}` : headline,
+    // Only this role can be pinged: never @everyone/@here or anyone named in a title.
+    allowed_mentions: { parse: [] as string[], roles: role ? [role] : [] },
     embeds: [
       {
         title: `WEEK ${week.week} DROPS · ${items.length} NEW ${items.length === 1 ? 'FIND' : 'FINDS'}`,

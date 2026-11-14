@@ -3,11 +3,11 @@
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { ViewShell } from '@/components/view-shell'
+import { onSignupClick, SIGNUP_URL } from '@/lib/buy-gate'
 import { HowToBuyVideo } from '@/components/how-to-buy-video'
 import { CouponCodes } from '@/components/coupon-codes'
 import { useT } from '@/lib/prefs'
 
-const SIGNUP_URL = 'https://ikako.vip/r/dqh2u'
 
 export function Manifesto({ onBack }: { onBack: () => void }) {
   const t = useT()
@@ -23,6 +23,7 @@ export function Manifesto({ onBack }: { onBack: () => void }) {
         href={SIGNUP_URL}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => onSignupClick('howtobuy')}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15 }}

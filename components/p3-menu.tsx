@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Heart, Sparkles } from 'lucide-react'
+import { Flame, Heart, Sparkles } from 'lucide-react'
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
 import { MENU_ITEMS, recentItems, type MenuItem, type Product } from '@/lib/data'
 import { ProductSlideshow } from '@/components/product-slideshow'
@@ -190,6 +190,14 @@ export function P3Menu({
                         : {}),
                   }}
                 >
+                  {item.flame && (
+                    <Flame
+                      aria-hidden
+                      className={`size-[0.62em] shrink-0 -translate-y-[0.04em] ${isActive ? 'text-orange-600' : 'text-orange-400'}`}
+                      fill="currentColor"
+                      strokeWidth={0}
+                    />
+                  )}
                   {item.glowFav && (
                     <Heart
                       aria-hidden

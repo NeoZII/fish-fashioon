@@ -22,9 +22,11 @@ const RETURNING_KEYS = [
   'fs:visited',
 ]
 
-export const CARDS_NEW: WhatsNewCard[] = ['find', 'favs', 'buy', 'codes', 'prefs', 'shareFavs']
+export const CARDS_NEW: WhatsNewCard[] = ['find', 'trending', 'favs', 'buy', 'codes', 'weekly', 'prefs', 'shareFavs']
 export const CARDS_RETURNING: WhatsNewCard[] = [
   'video',
+  'trending',
+  'weekly',
   'shareFavs',
   'codes',
   'favs',
@@ -37,6 +39,7 @@ export const CARDS_RETURNING: WhatsNewCard[] = [
 /** Where each card's OPEN button goes (cards without a target only explain). */
 export const CARD_TARGET: Partial<Record<WhatsNewCard, Exclude<ViewId, 'menu'>>> = {
   find: 'drops',
+  trending: 'trending',
   favs: 'favourites',
   shareFavs: 'favourites',
   buy: 'manifesto',
@@ -44,6 +47,11 @@ export const CARD_TARGET: Partial<Record<WhatsNewCard, Exclude<ViewId, 'menu'>>>
   codes: 'manifesto',
   search: 'archive',
   items: 'archive',
+}
+
+/** Cards that open a page outside the menu sections. */
+export const CARD_HREF: Partial<Record<WhatsNewCard, string>> = {
+  weekly: '/week',
 }
 
 function get(key: string): string | null {

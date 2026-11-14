@@ -11,6 +11,7 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/item/**': ['./assets/fonts/**'],
     '/list/**': ['./assets/fonts/**'],
+    '/week/**': ['./assets/fonts/**'],
   },
 }
 

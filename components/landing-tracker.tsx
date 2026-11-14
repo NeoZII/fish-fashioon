@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { track, visitSource } from '@/lib/track'
 
 export const LANDING_KEY = 'fs:landing'
 
@@ -11,11 +12,15 @@ export const LANDING_KEY = 'fs:landing'
  */
 export function LandingTracker() {
   useEffect(() => {
+    let firstOfSession = true
     try {
+      firstOfSession = window.sessionStorage.getItem(LANDING_KEY) === null
       window.sessionStorage.setItem(LANDING_KEY, window.location.pathname)
     } catch {
       // storage unavailable: item pages fall back to "go to All Items"
     }
+    // Count one visit per browsing session, by where it came from.
+    if (firstOfSession) track({ t: 'visit', s: visitSource() })
   }, [])
   return null
 }

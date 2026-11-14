@@ -3,6 +3,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   ArrowRight,
+  CalendarDays,
+  Flame,
   Globe,
   Heart,
   Link2,
@@ -20,7 +22,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ViewId } from '@/lib/data'
 import type { WhatsNewCard } from '@/lib/i18n'
 import { useT } from '@/lib/prefs'
-import { CARD_TARGET, CARDS_NEW, CARDS_RETURNING } from '@/lib/whats-new'
+import { CARD_HREF, CARD_TARGET, CARDS_NEW, CARDS_RETURNING } from '@/lib/whats-new'
 
 const ICONS: Record<WhatsNewCard, LucideIcon> = {
   find: Search,
@@ -33,6 +35,8 @@ const ICONS: Record<WhatsNewCard, LucideIcon> = {
   search: Search,
   items: Link2,
   links: ShieldCheck,
+  trending: Flame,
+  weekly: CalendarDays,
 }
 
 /** Cards in pink (favourites features); the rest use the site's cyan. */
@@ -163,6 +167,7 @@ export function WhatsNew({
                 {cards.map((id, i) => {
                   const Icon = ICONS[id]
                   const target = CARD_TARGET[id]
+                  const href = CARD_HREF[id]
                   const pink = PINK.has(id)
                   const card = t.whatsNew.cards[id]
                   return (
@@ -174,7 +179,7 @@ export function WhatsNew({
                         style={{ transform: 'skewX(-8deg)' }}
                         aria-hidden
                       >
-                        <Icon className="size-5" fill={id === 'favs' ? 'currentColor' : 'none'} />
+                        <Icon className="size-5" fill={id === 'favs' || id === 'trending' ? 'currentColor' : 'none'} strokeWidth={id === 'trending' ? 0 : 2} />
                       </span>
                       <div className="flex min-w-0 flex-1 flex-col gap-1">
                         <h3 className="font-mono text-xs font-bold tracking-[0.18em] text-foreground">
@@ -182,6 +187,18 @@ export function WhatsNew({
                           {card.title}
                         </h3>
                         <p className="font-mono text-xs leading-relaxed text-muted-foreground">{card.body}</p>
+                        {href && (
+                          <a
+                            href={href}
+                            onClick={onClose}
+                            className={`mt-1 flex items-center gap-1.5 self-start font-mono text-[11px] font-bold tracking-[0.2em] ${
+                              pink ? 'text-fav' : 'text-primary'
+                            } hover:underline`}
+                          >
+                            {t.whatsNew.open}
+                            <ArrowRight className="size-3.5" aria-hidden />
+                          </a>
+                        )}
                         {target && (
                           <button
                             type="button"

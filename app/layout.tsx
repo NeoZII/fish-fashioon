@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Anton, Geist, Geist_Mono, Oswald } from 'next/font/google'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 import { LandingTracker } from '@/components/landing-tracker'
+import { BuyGate } from '@/components/buy-gate'
 import './globals.css'
 
 // Geist (body sans) is only used for a little text (e.g. the promo popup), so
@@ -63,6 +64,7 @@ export default function RootLayout({
       <body className="antialiased font-sans">
         <LandingTracker />
         {children}
+        <BuyGate />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

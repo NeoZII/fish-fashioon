@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import type { Product } from '@/lib/data'
 import { itemPath } from '@/lib/item-key'
+import { onBuyClick } from '@/lib/buy-gate'
 import { categoryLabel } from '@/lib/i18n'
 import type { FxRates } from '@/lib/money'
 import { setRates, usePrefs, usePriceFormatter, useT } from '@/lib/prefs'
@@ -136,6 +137,7 @@ export function ItemView({
                 href={item.link}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
+                onClick={(e) => onBuyClick(e, item)}
                 className="flex min-h-[52px] items-center gap-2 bg-foreground px-7 font-mono text-sm font-bold tracking-[0.25em] text-background transition-colors hover:bg-primary hover:text-primary-foreground"
                 style={{ transform: 'skewX(-8deg)' }}
               >
@@ -211,6 +213,7 @@ export function ItemView({
           href={item.link}
           target="_blank"
           rel="noopener noreferrer sponsored"
+          onClick={(e) => onBuyClick(e, item)}
           className="flex min-h-[48px] shrink-0 items-center gap-2 bg-foreground px-5 font-mono text-xs font-bold tracking-[0.2em] text-background active:bg-primary active:text-primary-foreground"
           style={{ transform: 'skewX(-8deg)' }}
         >

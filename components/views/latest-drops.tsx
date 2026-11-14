@@ -1,5 +1,7 @@
 'use client'
 
+import { CalendarDays } from 'lucide-react'
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { categoryFilters, brandFilters, recentItems, type Product } from '@/lib/data'
 import { ViewShell } from '@/components/view-shell'
@@ -82,14 +84,24 @@ export function LatestDrops({ items, onBack }: { items: Product[]; onBack: () =>
         </div>
       }
     >
-      <div className="mb-8 flex items-end justify-between gap-4">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
           {t.drops.intro}
         </p>
-        <span className="shrink-0 font-mono text-xs tabular-nums text-primary">
-          {latest.length < 10 ? '0' : ''}
-          {t.common.newCount(latest.length)}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-3">
+          <Link
+            href="/week"
+            className="flex min-h-[40px] items-center gap-2 border border-border px-3 font-mono text-[10px] font-bold tracking-[0.2em] text-foreground hover:border-primary hover:text-primary"
+            style={{ transform: 'skewX(-8deg)' }}
+          >
+            <CalendarDays className="size-4" aria-hidden />
+            {t.week.latestLink}
+          </Link>
+          <span className="font-mono text-xs tabular-nums text-primary">
+            {latest.length < 10 ? '0' : ''}
+            {t.common.newCount(latest.length)}
+          </span>
+        </div>
       </div>
       <ProductGrid items={latest} accent="primary" shuffleItems={false} />
     </ViewShell>

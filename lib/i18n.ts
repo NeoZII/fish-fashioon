@@ -36,7 +36,7 @@ export function formatCount(lang: Lang, n: number): string {
   return n.toLocaleString(localeFor(lang))
 }
 
-type SectionId = 'drops' | 'archive' | 'sellers' | 'manifesto' | 'socials' | 'countdown' | 'favourites'
+type SectionId = 'drops' | 'trending' | 'archive' | 'sellers' | 'manifesto' | 'socials' | 'countdown' | 'favourites'
 type Step = { title: string; body: string }
 
 export type WhatsNewCard =
@@ -50,6 +50,8 @@ export type WhatsNewCard =
   | 'search'
   | 'items'
   | 'links'
+  | 'trending'
+  | 'weekly'
 
 export type Messages = {
   /** Big menu labels and section titles. */
@@ -230,6 +232,36 @@ export type Messages = {
     shareTitle: (n: number) => string
     limit: (n: number) => string
   }
+  trending: {
+    intro: string
+    warming: string
+    hot: string
+    taps: (n: number) => string
+  }
+  week: {
+    title: (n: number) => string
+    lead: (count: number, range: string) => string
+    top: string
+    all: string
+    prev: string
+    next: string
+    empty: string
+    latestLink: string
+  }
+  /** "First time on Kakobuy?" step on the first BUY tap. */
+  gate: {
+    kicker: string
+    title: string
+    body: string
+    newHere: string
+    newHereSub: string
+    haveAccount: string
+    howItWorks: string
+    kickerDone: string
+    titleDone: string
+    bodyDone: string
+    openItem: string
+  }
   whatsNew: {
     button: string
     kickerNew: string
@@ -249,6 +281,7 @@ export type Messages = {
 const en: Messages = {
   section: {
     drops: 'LATEST DROPS',
+    trending: 'TRENDING',
     archive: 'ALL ITEMS',
     sellers: 'SELLERS',
     manifesto: 'HOW TO BUY',
@@ -258,6 +291,7 @@ const en: Messages = {
   },
   tab: {
     drops: 'Latest Drops',
+    trending: 'Trending',
     archive: 'All Items',
     sellers: 'Sellers',
     manifesto: 'How to Buy',
@@ -447,6 +481,35 @@ const en: Messages = {
     shareTitle: (n) => `My Fashion Sea favourites (${n})`,
     limit: (n) => `The link holds your ${n} newest favourites.`,
   },
+  trending: {
+    intro: 'The finds people tapped BUY on the most in the last 7 days. Updated all day.',
+    warming: 'Trending fills up as people tap BUY. Meanwhile, here are the newest drops.',
+    hot: 'TRENDING',
+    taps: (n) => `${formatCount('en', n)} ${n === 1 ? 'tap' : 'taps'} this week`,
+  },
+  week: {
+    title: (n) => `WEEK ${n}`,
+    lead: (count, range) => `${formatCount('en', count)} new ${count === 1 ? 'find' : 'finds'} added ${range}.`,
+    top: 'MOST WANTED THIS WEEK',
+    all: 'EVERY DROP THIS WEEK',
+    prev: 'PREVIOUS WEEK',
+    next: 'NEXT WEEK',
+    empty: 'NO DROPS THIS WEEK YET',
+    latestLink: 'WEEKLY DROPS',
+  },
+  gate: {
+    kicker: 'BEFORE YOU BUY',
+    title: 'FIRST TIME ON KAKOBUY?',
+    body: 'Kakobuy buys the item in China and ships it to you. Create your account with our link first: new accounts get $400+ in coupons.',
+    newHere: 'I’M NEW · CREATE MY ACCOUNT',
+    newHereSub: '+ $400+ in coupons, then come back here',
+    haveAccount: 'I ALREADY HAVE AN ACCOUNT',
+    howItWorks: 'HOW IT WORKS (VIDEO)',
+    kickerDone: 'NEXT STEP',
+    titleDone: 'ACCOUNT READY?',
+    bodyDone: 'Once you’ve signed up in the other tab, open the item: it’ll be waiting for you on Kakobuy.',
+    openItem: 'OPEN THE ITEM',
+  },
   whatsNew: {
     button: 'WHAT’S NEW',
     kickerNew: 'WELCOME',
@@ -468,6 +531,8 @@ const en: Messages = {
       search: { title: 'SMARTER SEARCH', body: 'Typos are fine and shortcuts work (cdg, lv, af1). On phones, tap FILTERS for categories and brands.' },
       items: { title: 'A PAGE FOR EVERY FIND', body: 'Every item has its own link with a photo preview. Share it on WhatsApp, Discord, Instagram and more.' },
       links: { title: 'LINKS CHECKED EVERY WEEK', body: 'Every Kakobuy link gets checked each week, so dead ones are cleaned out fast.' },
+      trending: { title: 'WHAT’S TRENDING', body: 'See the finds people tap BUY on the most this week, updated all day.' },
+      weekly: { title: 'WEEKLY DROPS', body: 'Every week’s new finds on one page, also posted in the Discord every Sunday.' },
     },
   },
   categories: {},
@@ -476,6 +541,7 @@ const en: Messages = {
 const fr: Messages = {
   section: {
     drops: 'NOUVEAUTÉS',
+    trending: 'TENDANCES',
     archive: 'CATALOGUE',
     sellers: 'VENDEURS',
     manifesto: 'COMMENT ACHETER',
@@ -485,6 +551,7 @@ const fr: Messages = {
   },
   tab: {
     drops: 'Nouveautés',
+    trending: 'Tendances',
     archive: 'Catalogue',
     sellers: 'Vendeurs',
     manifesto: 'Comment acheter',
@@ -680,6 +747,35 @@ const fr: Messages = {
     shareTitle: (n) => `Mes favoris Fashion Sea (${n})`,
     limit: (n) => `Le lien contient tes ${n} favoris les plus récents.`,
   },
+  trending: {
+    intro: 'Les trouvailles les plus achetées ces 7 derniers jours (clics sur ACHETER). Mis à jour toute la journée.',
+    warming: 'Les tendances se remplissent quand les gens touchent ACHETER. En attendant, voici les dernières nouveautés.',
+    hot: 'TENDANCE',
+    taps: (n) => `${formatCount('fr', n)} ${n > 1 ? 'clics' : 'clic'} cette semaine`,
+  },
+  week: {
+    title: (n) => `SEMAINE ${n}`,
+    lead: (count, range) => `${formatCount('fr', count)} ${count > 1 ? 'nouvelles trouvailles ajoutées' : 'nouvelle trouvaille ajoutée'} ${range}.`,
+    top: 'LES PLUS CONVOITÉS DE LA SEMAINE',
+    all: 'TOUTES LES NOUVEAUTÉS DE LA SEMAINE',
+    prev: 'SEMAINE PRÉCÉDENTE',
+    next: 'SEMAINE SUIVANTE',
+    empty: 'PAS ENCORE DE NOUVEAUTÉS CETTE SEMAINE',
+    latestLink: 'NOUVEAUTÉS DE LA SEMAINE',
+  },
+  gate: {
+    kicker: 'AVANT D’ACHETER',
+    title: 'PREMIÈRE FOIS SUR KAKOBUY ?',
+    body: 'Kakobuy achète l’article en Chine et te l’envoie. Crée d’abord ton compte avec notre lien : les nouveaux comptes reçoivent plus de 400 $ de coupons.',
+    newHere: 'JE SUIS NOUVEAU · CRÉER MON COMPTE',
+    newHereSub: '+ 400 $ de coupons, puis reviens ici',
+    haveAccount: 'J’AI DÉJÀ UN COMPTE',
+    howItWorks: 'COMMENT ÇA MARCHE (VIDÉO)',
+    kickerDone: 'ÉTAPE SUIVANTE',
+    titleDone: 'COMPTE CRÉÉ ?',
+    bodyDone: 'Une fois inscrit dans l’autre onglet, ouvre l’article : il t’attend sur Kakobuy.',
+    openItem: 'OUVRIR L’ARTICLE',
+  },
   whatsNew: {
     button: 'NOUVEAUTÉS DU SITE',
     kickerNew: 'BIENVENUE',
@@ -701,6 +797,8 @@ const fr: Messages = {
       search: { title: 'UNE RECHERCHE PLUS MALINE', body: 'Les fautes de frappe passent et les raccourcis marchent (cdg, lv, af1). Sur téléphone, touche FILTRES pour les catégories et les marques.' },
       items: { title: 'UNE PAGE PAR TROUVAILLE', body: 'Chaque article a son propre lien avec un aperçu photo. Partage-le sur WhatsApp, Discord, Instagram et ailleurs.' },
       links: { title: 'LIENS VÉRIFIÉS CHAQUE SEMAINE', body: 'Chaque lien Kakobuy est vérifié toutes les semaines, pour enlever vite ceux qui sont morts.' },
+      trending: { title: 'LES TENDANCES', body: 'Vois les trouvailles les plus achetées de la semaine, mises à jour toute la journée.' },
+      weekly: { title: 'NOUVEAUTÉS DE LA SEMAINE', body: 'Toutes les trouvailles de la semaine sur une seule page, aussi postées sur le Discord chaque dimanche.' },
     },
   },
   categories: {
@@ -743,6 +841,7 @@ const ruForms = (one: string, few: string, many: string): Forms => ({ one, few, 
 const ru: Messages = {
   section: {
     drops: 'НОВИНКИ',
+    trending: 'В ТРЕНДЕ',
     archive: 'КАТАЛОГ',
     sellers: 'ПРОДАВЦЫ',
     manifesto: 'КАК КУПИТЬ',
@@ -752,6 +851,7 @@ const ru: Messages = {
   },
   tab: {
     drops: 'Новинки',
+    trending: 'В тренде',
     archive: 'Каталог',
     sellers: 'Продавцы',
     manifesto: 'Как купить',
@@ -945,6 +1045,35 @@ const ru: Messages = {
     shareTitle: (n) => `Моё избранное на Fashion Sea (${n})`,
     limit: (n) => `В ссылку попадут ${n} последних добавленных товаров.`,
   },
+  trending: {
+    intro: 'Находки, на которые чаще всего нажимали «КУПИТЬ» за последние 7 дней. Обновляется весь день.',
+    warming: 'Тренды появятся, когда люди начнут нажимать «КУПИТЬ». А пока вот самые свежие новинки.',
+    hot: 'В ТРЕНДЕ',
+    taps: (n) => `${formatCount('ru', n)} ${plural('ru', n, ruForms('нажатие', 'нажатия', 'нажатий'))} за неделю`,
+  },
+  week: {
+    title: (n) => `НЕДЕЛЯ ${n}`,
+    lead: (count, range) => `Новинок за ${range}: ${formatCount('ru', count)}.`,
+    top: 'САМОЕ ПОПУЛЯРНОЕ ЗА НЕДЕЛЮ',
+    all: 'ВСЕ НОВИНКИ НЕДЕЛИ',
+    prev: 'ПРЕДЫДУЩАЯ НЕДЕЛЯ',
+    next: 'СЛЕДУЮЩАЯ НЕДЕЛЯ',
+    empty: 'НА ЭТОЙ НЕДЕЛЕ НОВИНОК ПОКА НЕТ',
+    latestLink: 'НОВИНКИ НЕДЕЛИ',
+  },
+  gate: {
+    kicker: 'ПЕРЕД ПОКУПКОЙ',
+    title: 'ВПЕРВЫЕ НА KAKOBUY?',
+    body: 'Kakobuy выкупает товар в Китае и отправляет его тебе. Сначала создай аккаунт по нашей ссылке: новые аккаунты получают купоны на $400+.',
+    newHere: 'Я НОВИЧОК · СОЗДАТЬ АККАУНТ',
+    newHereSub: '+ купоны на $400+, потом вернись сюда',
+    haveAccount: 'У МЕНЯ УЖЕ ЕСТЬ АККАУНТ',
+    howItWorks: 'КАК ЭТО РАБОТАЕТ (ВИДЕО)',
+    kickerDone: 'СЛЕДУЮЩИЙ ШАГ',
+    titleDone: 'АККАУНТ ГОТОВ?',
+    bodyDone: 'Когда зарегистрируешься в другой вкладке, открой товар: он будет ждать тебя на Kakobuy.',
+    openItem: 'ОТКРЫТЬ ТОВАР',
+  },
   whatsNew: {
     button: 'ЧТО НОВОГО',
     kickerNew: 'ДОБРО ПОЖАЛОВАТЬ',
@@ -966,6 +1095,8 @@ const ru: Messages = {
       search: { title: 'УМНЫЙ ПОИСК', body: 'Опечатки не страшны, сокращения работают (cdg, lv, af1). На телефоне нажми ФИЛЬТРЫ, чтобы выбрать категорию и бренд.' },
       items: { title: 'СТРАНИЦА ДЛЯ КАЖДОЙ НАХОДКИ', body: 'У каждого товара своя ссылка с превью и фото. Делись ею в WhatsApp, Discord, Instagram и не только.' },
       links: { title: 'ССЫЛКИ ПРОВЕРЯЮТСЯ КАЖДУЮ НЕДЕЛЮ', body: 'Каждую неделю все ссылки Kakobuy проверяются, и нерабочие быстро убираются.' },
+      trending: { title: 'ЧТО В ТРЕНДЕ', body: 'Смотри, на какие находки чаще всего нажимают «КУПИТЬ» на этой неделе. Обновляется весь день.' },
+      weekly: { title: 'НОВИНКИ НЕДЕЛИ', body: 'Все новинки недели на одной странице, а по воскресеньям — пост в Discord.' },
     },
   },
   categories: {
@@ -1008,6 +1139,7 @@ const plForms = (one: string, few: string, many: string): Forms => ({ one, few, 
 const pl: Messages = {
   section: {
     drops: 'NOWOŚCI',
+    trending: 'NA CZASIE',
     archive: 'KATALOG',
     sellers: 'SPRZEDAWCY',
     manifesto: 'JAK KUPIĆ',
@@ -1017,6 +1149,7 @@ const pl: Messages = {
   },
   tab: {
     drops: 'Nowości',
+    trending: 'Na czasie',
     archive: 'Katalog',
     sellers: 'Sprzedawcy',
     manifesto: 'Jak kupić',
@@ -1210,6 +1343,35 @@ const pl: Messages = {
     shareTitle: (n) => `Moje ulubione na Fashion Sea (${n})`,
     limit: (n) => `Link zawiera ${n} ostatnio dodanych ulubionych.`,
   },
+  trending: {
+    intro: 'Znaleziska, przy których najczęściej klikano KUP w ostatnich 7 dniach. Aktualizowane przez cały dzień.',
+    warming: 'Lista zapełni się, gdy ludzie zaczną klikać KUP. Na razie oto najnowsze dropy.',
+    hot: 'NA CZASIE',
+    taps: (n) => `${formatCount('pl', n)} ${plural('pl', n, plForms('kliknięcie', 'kliknięcia', 'kliknięć'))} w tym tygodniu`,
+  },
+  week: {
+    title: (n) => `TYDZIEŃ ${n}`,
+    lead: (count, range) => `Nowe znaleziska ${range}: ${formatCount('pl', count)}.`,
+    top: 'NAJPOPULARNIEJSZE W TYM TYGODNIU',
+    all: 'WSZYSTKIE NOWOŚCI TYGODNIA',
+    prev: 'POPRZEDNI TYDZIEŃ',
+    next: 'NASTĘPNY TYDZIEŃ',
+    empty: 'W TYM TYGODNIU NIE MA JESZCZE NOWOŚCI',
+    latestLink: 'NOWOŚCI TYGODNIA',
+  },
+  gate: {
+    kicker: 'ZANIM KUPISZ',
+    title: 'PIERWSZY RAZ NA KAKOBUY?',
+    body: 'Kakobuy kupuje produkt w Chinach i wysyła go do ciebie. Najpierw załóż konto przez nasz link: nowe konta dostają kupony o wartości $400+.',
+    newHere: 'JESTEM NOWY · ZAŁÓŻ KONTO',
+    newHereSub: '+ kupony o wartości $400+, potem wróć tutaj',
+    haveAccount: 'MAM JUŻ KONTO',
+    howItWorks: 'JAK TO DZIAŁA (WIDEO)',
+    kickerDone: 'NASTĘPNY KROK',
+    titleDone: 'KONTO GOTOWE?',
+    bodyDone: 'Gdy zarejestrujesz się w drugiej karcie, otwórz produkt: będzie na ciebie czekał na Kakobuy.',
+    openItem: 'OTWÓRZ PRODUKT',
+  },
   whatsNew: {
     button: 'CO NOWEGO',
     kickerNew: 'WITAJ',
@@ -1231,6 +1393,8 @@ const pl: Messages = {
       search: { title: 'MĄDRZEJSZE WYSZUKIWANIE', body: 'Literówki nie przeszkadzają, a skróty działają (cdg, lv, af1). Na telefonie kliknij FILTRY, żeby wybrać kategorię i markę.' },
       items: { title: 'STRONA DLA KAŻDEGO ZNALEZISKA', body: 'Każdy produkt ma własny link z podglądem zdjęcia. Udostępnij go na WhatsAppie, Discordzie, Instagramie i nie tylko.' },
       links: { title: 'LINKI SPRAWDZANE CO TYDZIEŃ', body: 'Co tydzień sprawdzamy każdy link do Kakobuy, żeby szybko usuwać te, które nie działają.' },
+      trending: { title: 'CO JEST NA CZASIE', body: 'Zobacz znaleziska, przy których najczęściej klika się KUP w tym tygodniu. Aktualizowane przez cały dzień.' },
+      weekly: { title: 'NOWOŚCI TYGODNIA', body: 'Wszystkie nowe znaleziska z tygodnia na jednej stronie, w każdą niedzielę także na Discordzie.' },
     },
   },
   categories: {

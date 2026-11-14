@@ -17,6 +17,7 @@ import { Manifesto } from '@/components/views/manifesto'
 import { Socials } from '@/components/views/socials'
 import { Countdown } from '@/components/views/countdown'
 import { Favourites } from '@/components/views/favourites'
+import { Trending } from '@/components/views/trending'
 import { NavContext } from '@/components/nav-context'
 import { useT } from '@/lib/prefs'
 
@@ -136,6 +137,7 @@ export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
           <P3Menu onNavigate={navigate} items={globalItems} onWhatsNew={openGuide} whatsNewUnseen={guideUnseen} />
         )}
         {view === 'drops' && (loading ? <LoadingScreen /> : <LatestDrops items={globalItems} onBack={back} />)}
+        {view === 'trending' && <Trending items={globalItems} loading={loading} onBack={back} />}
         {view === 'archive' && (loading ? <LoadingScreen /> : <TheArchive items={globalItems} onBack={back} />)}
         {view === 'sellers' && (loading ? <LoadingScreen /> : <Sellers items={globalItems} onBack={back} />)}
         {view === 'manifesto' && <Manifesto onBack={back} />}

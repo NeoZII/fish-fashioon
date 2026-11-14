@@ -85,6 +85,11 @@ export async function GET(req: Request) {
   const post = buildPost(week.id, data)
   if (dry) return Response.json({ ok: true, dry: true, week: week.id, post })
 
+  // Previews share the database with production: only the live site may post,
+  // so a preview can never use up the week's post or link to itself.
+  if (process.env.VERCEL_ENV !== 'production') {
+    return Response.json({ ok: false, reason: 'posts only from the production site (use ?dry=1 to preview)' })
+  }
   const webhook = process.env.DISCORD_WEBHOOK_URL
   if (!webhook) return Response.json({ ok: false, reason: 'DISCORD_WEBHOOK_URL is not set' })
   const { weekday, hour } = brusselsNow()

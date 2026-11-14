@@ -1,12 +1,14 @@
 'use client'
 
 import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion'
-import { ArrowUpRight, Check, Flag, Shuffle, X } from 'lucide-react'
+import { ArrowUpRight, Check, Flag, Flame, Shuffle, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { Product } from '@/lib/data'
 import { ProductImage } from '@/components/product-image'
 import Link from 'next/link'
 import { itemPath } from '@/lib/item-key'
+import { onBuyClick } from '@/lib/buy-gate'
+import { BADGE_TOP, useTrending } from '@/lib/trending'
 import { FavouriteButton } from '@/components/favourite-button'
 import { categoryLabel, type Messages } from '@/lib/i18n'
 import { usePriceFormatter, useT, type DisplayPrice } from '@/lib/prefs'
@@ -134,6 +136,7 @@ export function ProductGrid({
 }) {
   const t = useT()
   const formatPrice = usePriceFormatter()
+  const { rank } = useTrending()
   const [ordered, setOrdered] = useState<Product[]>([])
   const [visible, setVisible] = useState(BATCH_SIZE)
   const [reportTarget, setReportTarget] = useState<Product | null>(null)
@@ -212,6 +215,7 @@ export function ProductGrid({
             accent={accent}
             t={t}
             price={formatPrice(item.price)}
+            trendingRank={rank.get(item.key)}
             onReport={() => setReportTarget(item)}
           />
         ))}
@@ -269,6 +273,7 @@ function ProductCard({
   accent,
   t,
   price,
+  trendingRank,
   onReport,
 }: {
   product: Product
@@ -276,6 +281,8 @@ function ProductCard({
   accent: Accent
   t: Messages
   price: DisplayPrice
+  /** 1-based rank in Trending (shown as a flame badge for the top ones). */
+  trendingRank?: number
   onReport: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -338,6 +345,15 @@ function ProductCard({
           >
             {categoryLabel(t, product.category)}
           </span>
+          {trendingRank !== undefined && trendingRank <= BADGE_TOP && (
+            <span
+              className="pointer-events-none absolute left-2 top-8 flex skew-x-[-8deg] items-center gap-1 bg-orange-500 px-2 py-0.5 font-mono text-[9px] font-bold tracking-[0.15em] text-black"
+              title={t.trending.hot}
+            >
+              <Flame className="size-3" fill="currentColor" strokeWidth={0} aria-hidden />#{trendingRank}
+              <span className="sr-only"> {t.trending.hot}</span>
+            </span>
+          )}
           <FavouriteButton itemKey={product.key} title={product.title} className="absolute right-2 top-2 z-10" />
           <button
             type="button"
@@ -377,7 +393,8 @@ function ProductCard({
             <a
               href={product.link || '#'}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer sponsored"
+              onClick={(e) => onBuyClick(e, product)}
               className="flex min-h-[40px] skew-x-[-8deg] items-center justify-center gap-1 bg-foreground px-4 py-2 font-mono text-[11px] font-bold tracking-[0.2em] text-background transition-colors hover:bg-primary hover:text-primary-foreground md:shrink-0"
               aria-label={t.grid.buyAria(product.title)}
             >

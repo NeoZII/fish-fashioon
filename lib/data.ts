@@ -1,4 +1,13 @@
-export type ViewId = 'menu' | 'drops' | 'archive' | 'sellers' | 'manifesto' | 'socials' | 'countdown' | 'favourites'
+export type ViewId =
+  | 'menu'
+  | 'drops'
+  | 'trending'
+  | 'archive'
+  | 'sellers'
+  | 'manifesto'
+  | 'socials'
+  | 'countdown'
+  | 'favourites'
 
 export type MenuItem = {
   id: Exclude<ViewId, 'menu'>
@@ -17,6 +26,8 @@ export type MenuItem = {
   redAccent?: boolean
   /** Hot-pink "favourites" treatment: glowing label, heart, pink highlight slab. */
   glowFav?: boolean
+  /** Flame icon before the label (Trending). */
+  flame?: boolean
 }
 
 export const MENU_ITEMS: MenuItem[] = [
@@ -30,6 +41,17 @@ export const MENU_ITEMS: MenuItem[] = [
     skewY: 6,
     offsetX: 0,
     badge: 'NEW',
+  },
+  {
+    id: 'trending',
+    label: 'TRENDING',
+    index: '02',
+    sub: 'THE HEAT',
+    fontSize: 62,
+    skewX: -9,
+    skewY: -4,
+    offsetX: 22,
+    flame: true,
   },
   {
     id: 'archive',

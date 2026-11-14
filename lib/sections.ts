@@ -4,6 +4,7 @@ import type { ViewId } from './data'
 export const VIEW_PATHS: Record<ViewId, string> = {
   menu: '/',
   drops: '/latest',
+  trending: '/trending',
   archive: '/all',
   sellers: '/sellers',
   manifesto: '/how-to-buy',
@@ -29,6 +30,10 @@ export const SECTION_META: Record<Exclude<ViewId, 'menu'>, { title: string; desc
     title: 'Latest Drops',
     description: 'Everything added to Fashion Sea in the last 7 days, with direct Kakobuy links. Updated daily.',
   },
+  trending: {
+    title: 'Trending',
+    description: 'The Fashion Sea finds people are buying the most this week, updated all day.',
+  },
   archive: {
     title: 'All Items',
     description: 'Every find on Fashion Sea: thousands of pieces from 170+ brands, filter by category and brand.',
@@ -39,7 +44,7 @@ export const SECTION_META: Record<Exclude<ViewId, 'menu'>, { title: string; desc
   },
   manifesto: {
     title: 'How to Buy',
-    description: 'Step-by-step guide to ordering with Kakobuy, from account to doorstep. Unlock the coupons first.',
+    description: 'Video and step-by-step guide to ordering with Kakobuy, from account to doorstep, plus shipping coupon codes.',
   },
   socials: {
     title: 'Socials',

@@ -66,6 +66,26 @@ export function toggleFavourite(key: string): boolean {
   return true
 }
 
+/**
+ * Save several items at once (from a shared list), keeping their order at the
+ * top of the list. Items already saved stay where they are.
+ * Returns how many were newly added.
+ */
+export function addFavourites(keys: string[]): number {
+  const list = read()
+  const have = new Set(list.map((e) => e.k))
+  const now = Date.now()
+  const fresh: Entry[] = []
+  for (const k of keys) {
+    if (have.has(k)) continue
+    have.add(k)
+    // Slightly decreasing timestamps keep the shared order (newest first).
+    fresh.push({ k, t: now - fresh.length })
+  }
+  if (fresh.length) write([...fresh, ...list].slice(0, MAX_FAVOURITES))
+  return fresh.length
+}
+
 export function removeFavourites(keys: string[]) {
   const drop = new Set(keys)
   write(read().filter((e) => !drop.has(e.k)))

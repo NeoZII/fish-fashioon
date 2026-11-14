@@ -5,7 +5,9 @@ import type { ViewId } from '@/lib/data'
 import { VIEW_PATHS, viewFromPath } from '@/lib/sections'
 import { useGlobalItems } from '@/hooks/use-global-items'
 import { P3Menu } from '@/components/p3-menu'
-import { PromoModal } from '@/components/promo-modal'
+import { PromoModal, promoWillShow } from '@/components/promo-modal'
+import { WhatsNew, type GuideTab } from '@/components/whats-new'
+import { hasSeenRelease, isReturningVisitor, markReleaseSeen, PROMO_CLOSED_EVENT } from '@/lib/whats-new'
 import { LoadingScreen } from '@/components/loading-screen'
 import { TransitionCurtain } from '@/components/transition-curtain'
 import { LatestDrops } from '@/components/views/latest-drops'
@@ -15,6 +17,7 @@ import { Manifesto } from '@/components/views/manifesto'
 import { Socials } from '@/components/views/socials'
 import { Countdown } from '@/components/views/countdown'
 import { Favourites } from '@/components/views/favourites'
+import { Trending } from '@/components/views/trending'
 import { NavContext } from '@/components/nav-context'
 import { useT } from '@/lib/prefs'
 
@@ -79,14 +82,62 @@ export function Experience({ initialView = 'menu' }: { initialView?: ViewId }) {
 
   const back = useCallback(() => navigate('menu'), [navigate])
 
+  // "What's new" guide: once per release, after the promo pop-up, on the menu.
+  const [guideOpen, setGuideOpen] = useState(false)
+  const [guideTab, setGuideTab] = useState<GuideTab>('back')
+  const [guideUnseen, setGuideUnseen] = useState(false)
+  const [guidePending, setGuidePending] = useState(false)
+
+  useEffect(() => {
+    setGuideTab(isReturningVisitor() ? 'back' : 'new')
+    if (hasSeenRelease()) return
+    setGuideUnseen(true)
+    if (!promoWillShow()) {
+      const timer = window.setTimeout(() => setGuidePending(true), 1400)
+      return () => window.clearTimeout(timer)
+    }
+    const onPromoClosed = () => window.setTimeout(() => setGuidePending(true), 450)
+    window.addEventListener(PROMO_CLOSED_EVENT, onPromoClosed, { once: true })
+    return () => window.removeEventListener(PROMO_CLOSED_EVENT, onPromoClosed)
+  }, [])
+
+  // Don't cover a section someone came to see: wait until they're on the menu.
+  useEffect(() => {
+    if (guidePending && view === 'menu' && !curtain) {
+      setGuidePending(false)
+      setGuideOpen(true)
+    }
+  }, [guidePending, view, curtain])
+
+  const closeGuide = useCallback(() => {
+    markReleaseSeen()
+    setGuideUnseen(false)
+    setGuidePending(false)
+    setGuideOpen(false)
+  }, [])
+
+  const openGuide = useCallback(() => setGuideOpen(true), [])
+
+  const openFromGuide = useCallback(
+    (target: Exclude<ViewId, 'menu'>) => {
+      closeGuide()
+      navigate(target)
+    },
+    [closeGuide, navigate],
+  )
+
   return (
     <NavContext.Provider value={navigate}>
     <div className="relative min-h-dvh bg-background">
       <PromoModal />
+      <WhatsNew open={guideOpen} initialTab={guideTab} onClose={closeGuide} onOpen={openFromGuide} />
       <TransitionCurtain show={curtain} />
       <div key={view}>
-        {view === 'menu' && <P3Menu onNavigate={navigate} items={globalItems} />}
+        {view === 'menu' && (
+          <P3Menu onNavigate={navigate} items={globalItems} onWhatsNew={openGuide} whatsNewUnseen={guideUnseen} />
+        )}
         {view === 'drops' && (loading ? <LoadingScreen /> : <LatestDrops items={globalItems} onBack={back} />)}
+        {view === 'trending' && <Trending items={globalItems} loading={loading} onBack={back} />}
         {view === 'archive' && (loading ? <LoadingScreen /> : <TheArchive items={globalItems} onBack={back} />)}
         {view === 'sellers' && (loading ? <LoadingScreen /> : <Sellers items={globalItems} onBack={back} />)}
         {view === 'manifesto' && <Manifesto onBack={back} />}

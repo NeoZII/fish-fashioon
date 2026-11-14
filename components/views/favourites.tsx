@@ -15,6 +15,8 @@ import { usePrefs, useT } from '@/lib/prefs'
 import { ViewShell } from '@/components/view-shell'
 import { ProductGrid } from '@/components/product-grid'
 import { FavouritesIntro } from '@/components/favourites-intro'
+import { ShareButton } from '@/components/share-button'
+import { listPath, SHARE_LIST_MAX } from '@/lib/share-list'
 
 export function Favourites({
   items,
@@ -32,6 +34,9 @@ export function Favourites({
   const { lang, currency, rates } = usePrefs()
   const [introOpen, setIntroOpen] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
+  // The share link needs this site's address, known only in the browser.
+  const [origin, setOrigin] = useState('')
+  useEffect(() => setOrigin(window.location.origin), [])
 
   // First visit: explain how favourites work.
   useEffect(() => {
@@ -64,6 +69,9 @@ export function Favourites({
     () => (loading || !items.length ? [] : list.filter((e) => !byKey.has(e.k)).map((e) => e.k)),
     [list, byKey, loading, items.length],
   )
+
+  // Shared list = the saved items still in the catalogue, newest first.
+  const sharePath = useMemo(() => (saved.length ? listPath(saved.map((p) => p.key)) : ''), [saved])
 
   const totals = useMemo(() => {
     let usd = 0
@@ -130,6 +138,20 @@ export function Favourites({
           )}
         </div>
       </div>
+
+      {sharePath && origin && (
+        <div className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <ShareButton
+            url={`${origin}${sharePath}`}
+            title={t.shared.shareTitle(Math.min(saved.length, SHARE_LIST_MAX))}
+            previewImage={`${sharePath}/opengraph-image`}
+            label={t.shared.shareList}
+          />
+          {saved.length > SHARE_LIST_MAX && (
+            <span className="font-mono text-[11px] text-muted-foreground">{t.shared.limit(SHARE_LIST_MAX)}</span>
+          )}
+        </div>
+      )}
 
       {missing.length > 0 && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border border-dashed border-border px-4 py-3 font-mono text-xs text-muted-foreground">

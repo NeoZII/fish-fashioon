@@ -2,10 +2,25 @@
 
 import { useEffect, useState } from 'react'
 import { useT } from '@/lib/prefs'
+import { PROMO_CLOSED_EVENT } from '@/lib/whats-new'
+import { onSignupClick, SIGNUP_URL } from '@/lib/buy-gate'
 
 const STORAGE_KEY = 'fishfashion:promo-seen'
-const OFFER_URL = 'https://ikako.vip/r/dqh2u'
+const REPEAT_MS = 24 * 60 * 60 * 1000
+const OFFER_URL = SIGNUP_URL
 const COUPON_CODE = 'Fashionsea'
+
+/** True if the promo pop-up will appear on this page load (not seen in the last 24h). */
+export function promoWillShow(): boolean {
+  try {
+    const last = Number(window.localStorage.getItem(STORAGE_KEY))
+    // Re-show only after 24h have passed.
+    return !(last && !Number.isNaN(last) && Date.now() - last < REPEAT_MS)
+  } catch {
+    // If storage is unavailable, still show once this load.
+    return true
+  }
+}
 
 /**
  * One-time promotional modal. Appears ~1.2s after first load, then records a
@@ -18,21 +33,7 @@ export function PromoModal() {
   const t = useT()
 
   useEffect(() => {
-    let show = true
-    try {
-      const seen = window.localStorage.getItem(STORAGE_KEY)
-      if (seen) {
-        const last = Number(seen)
-        // Re-show only after 24h have passed.
-        if (!Number.isNaN(last) && Date.now() - last < 24 * 60 * 60 * 1000) {
-          show = false
-        }
-      }
-    } catch {
-      // If storage is unavailable, still show once this load.
-    }
-
-    if (!show) return
+    if (!promoWillShow()) return
     const timer = window.setTimeout(() => setOpen(true), 1200)
     return () => window.clearTimeout(timer)
   }, [])
@@ -60,6 +61,7 @@ export function PromoModal() {
     } catch {
       // Best-effort — nothing to do if storage is blocked.
     }
+    window.dispatchEvent(new Event(PROMO_CLOSED_EVENT))
   }
 
   function copyCode() {
@@ -129,7 +131,10 @@ export function PromoModal() {
             href={OFFER_URL}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={close}
+            onClick={() => {
+              onSignupClick('promo')
+              close()
+            }}
             className="group flex w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-4 font-display text-lg uppercase tracking-wide text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
           >
             {t.promo.claim}

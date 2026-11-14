@@ -36,8 +36,22 @@ export function formatCount(lang: Lang, n: number): string {
   return n.toLocaleString(localeFor(lang))
 }
 
-type SectionId = 'drops' | 'archive' | 'sellers' | 'manifesto' | 'socials' | 'countdown' | 'favourites'
+type SectionId = 'drops' | 'trending' | 'archive' | 'sellers' | 'manifesto' | 'socials' | 'countdown' | 'favourites'
 type Step = { title: string; body: string }
+
+export type WhatsNewCard =
+  | 'find'
+  | 'favs'
+  | 'shareFavs'
+  | 'buy'
+  | 'video'
+  | 'codes'
+  | 'prefs'
+  | 'search'
+  | 'items'
+  | 'links'
+  | 'trending'
+  | 'weekly'
 
 export type Messages = {
   /** Big menu labels and section titles. */
@@ -189,6 +203,77 @@ export type Messages = {
     /** `live`: the rate came from the ECB today (otherwise it's an approximation). */
     rate: (eurPerUsd: string, live: boolean) => string
   }
+  video: {
+    title: string
+    note: string
+  }
+  /** Kakobuy coupon codes (the codes themselves are never translated). */
+  codes: {
+    title: string
+    how: string
+    fashionsea: string
+    seafinds: string
+    tapToCopy: string
+    copied: string
+    copyAria: (code: string) => string
+  }
+  /** A favourites list someone shared (/list/…). */
+  shared: {
+    title: string
+    lead: (n: number) => string
+    saveAll: string
+    added: (n: number) => string
+    allThere: string
+    openMine: string
+    unavailable: (n: number) => string
+    empty: string
+    /** Button on My Favourites. */
+    shareList: string
+    shareTitle: (n: number) => string
+    limit: (n: number) => string
+  }
+  trending: {
+    intro: string
+    warming: string
+    hot: string
+    taps: (n: number) => string
+  }
+  week: {
+    title: (n: number) => string
+    lead: (count: number, range: string) => string
+    top: string
+    all: string
+    prev: string
+    next: string
+    empty: string
+    latestLink: string
+  }
+  /** "First time on Kakobuy?" step on the first BUY tap. */
+  gate: {
+    kicker: string
+    title: string
+    body: string
+    newHere: string
+    newHereSub: string
+    haveAccount: string
+    howItWorks: string
+    kickerDone: string
+    titleDone: string
+    bodyDone: string
+    openItem: string
+  }
+  whatsNew: {
+    button: string
+    kickerNew: string
+    titleNew: string
+    leadNew: string
+    kickerBack: string
+    titleBack: string
+    leadBack: string
+    gotIt: string
+    open: string
+    cards: Record<WhatsNewCard, { title: string; body: string }>
+  }
   /** Category chips and card tags (sheet values are English upper case). */
   categories: Record<string, string>
 }
@@ -196,6 +281,7 @@ export type Messages = {
 const en: Messages = {
   section: {
     drops: 'LATEST DROPS',
+    trending: 'TRENDING',
     archive: 'ALL ITEMS',
     sellers: 'SELLERS',
     manifesto: 'HOW TO BUY',
@@ -205,6 +291,7 @@ const en: Messages = {
   },
   tab: {
     drops: 'Latest Drops',
+    trending: 'Trending',
     archive: 'All Items',
     sellers: 'Sellers',
     manifesto: 'How to Buy',
@@ -348,7 +435,7 @@ const en: Messages = {
     tapToCopy: 'tap to copy',
     copied: 'copied!',
     bodyBefore: 'Unlock ',
-    highlight: '$300+ in exclusive coupons',
+    highlight: '$400+ in exclusive coupons',
     bodyAfter: ' — limited time only. Don’t miss the drop.',
     claim: 'Claim Coupons',
     noThanks: 'No thanks',
@@ -368,12 +455,93 @@ const en: Messages = {
     aria: 'Language and currency',
     rate: (r, live) => `1 $ ≈ ${r} €${live ? ' · today’s ECB rate' : ''}`,
   },
+  video: {
+    title: 'WATCH THE GUIDE',
+    note: 'Every step on Kakobuy in 84 seconds. No sound, captions on screen.',
+  },
+  codes: {
+    title: 'SHIPPING CODES',
+    how: 'On Kakobuy: Mine → Coupon → Exchange, type the code, then pick it in the Coupon row before you pay shipping.',
+    fashionsea: '−20% shipping',
+    seafinds: '−$15',
+    tapToCopy: 'TAP TO COPY',
+    copied: 'COPIED!',
+    copyAria: (code) => `Copy the code ${code}`,
+  },
+  shared: {
+    title: 'SHARED LIST',
+    lead: (n) => `${formatCount('en', n)} ${n === 1 ? 'find' : 'finds'} shared with you.`,
+    saveAll: 'SAVE ALL TO MY FAVOURITES',
+    added: (n) => `Added ${formatCount('en', n)} to My Favourites.`,
+    allThere: 'All of these are in your favourites.',
+    openMine: 'OPEN MY FAVOURITES',
+    unavailable: (n) => `${n} ${n === 1 ? 'item from this list is' : 'items from this list are'} no longer available.`,
+    empty: 'NOTHING LEFT IN THIS LIST',
+    shareList: 'SHARE MY LIST',
+    shareTitle: (n) => `My Fashion Sea favourites (${n})`,
+    limit: (n) => `The link holds your ${n} newest favourites.`,
+  },
+  trending: {
+    intro: 'The finds people tapped BUY on the most in the last 7 days. Updated all day.',
+    warming: 'Trending fills up as people tap BUY. Meanwhile, here are the newest drops.',
+    hot: 'TRENDING',
+    taps: (n) => `${formatCount('en', n)} ${n === 1 ? 'tap' : 'taps'} this week`,
+  },
+  week: {
+    title: (n) => `WEEK ${n}`,
+    lead: (count, range) => `${formatCount('en', count)} new ${count === 1 ? 'find' : 'finds'} added ${range}.`,
+    top: 'MOST WANTED THIS WEEK',
+    all: 'EVERY DROP THIS WEEK',
+    prev: 'PREVIOUS WEEK',
+    next: 'NEXT WEEK',
+    empty: 'NO DROPS THIS WEEK YET',
+    latestLink: 'WEEKLY DROPS',
+  },
+  gate: {
+    kicker: 'BEFORE YOU BUY',
+    title: 'FIRST TIME ON KAKOBUY?',
+    body: 'Kakobuy buys the item in China and ships it to you. Create your account with our link first: new accounts get $400+ in coupons.',
+    newHere: 'I’M NEW · CREATE MY ACCOUNT',
+    newHereSub: '+ $400+ in coupons, then come back here',
+    haveAccount: 'I ALREADY HAVE AN ACCOUNT',
+    howItWorks: 'HOW IT WORKS (VIDEO)',
+    kickerDone: 'NEXT STEP',
+    titleDone: 'ACCOUNT READY?',
+    bodyDone: 'Once you’ve signed up in the other tab, open the item: it’ll be waiting for you on Kakobuy.',
+    openItem: 'OPEN THE ITEM',
+  },
+  whatsNew: {
+    button: 'WHAT’S NEW',
+    kickerNew: 'WELCOME',
+    titleNew: 'HOW FASHION SEA WORKS',
+    leadNew: 'Thousands of finds with direct Kakobuy links. Here’s the quick tour.',
+    kickerBack: 'UPDATE',
+    titleBack: 'WHAT’S NEW',
+    leadBack: 'Fashion Sea got a big upgrade. Here’s everything that changed.',
+    gotIt: 'GOT IT',
+    open: 'OPEN',
+    cards: {
+      find: { title: 'FIND A PIECE', body: 'Latest Drops shows the week’s new finds. All Items has everything, with search and filters.' },
+      favs: { title: 'SAVE WHAT YOU LIKE', body: 'Tap the ♥ on any item to keep it in My Favourites. No account, no sign-up.' },
+      shareFavs: { title: 'SHARE YOUR FAVOURITES', body: 'Send your whole list in one link. Friends can save it to theirs in one tap.' },
+      buy: { title: 'BUY IT WITH KAKOBUY', body: 'Tap BUY and the item opens on Kakobuy. First time? How to Buy walks you through it.' },
+      video: { title: 'HOW TO BUY, IN VIDEO', body: 'A short video of every step on Kakobuy, from the item page to the shipping coupon.' },
+      codes: { title: 'SHIPPING CODES', body: 'Fashionsea = −20% on shipping, seafinds = −$15. Use them when you ship your parcel.' },
+      prefs: { title: 'YOUR LANGUAGE, YOUR CURRENCY', body: 'English, Français, Русский or Polski, and prices in $ or €. Tap the EN · $ button to switch.' },
+      search: { title: 'SMARTER SEARCH', body: 'Typos are fine and shortcuts work (cdg, lv, af1). On phones, tap FILTERS for categories and brands.' },
+      items: { title: 'A PAGE FOR EVERY FIND', body: 'Every item has its own link with a photo preview. Share it on WhatsApp, Discord, Instagram and more.' },
+      links: { title: 'LINKS CHECKED EVERY WEEK', body: 'Every Kakobuy link gets checked each week, so dead ones are cleaned out fast.' },
+      trending: { title: 'WHAT’S TRENDING', body: 'See the finds people tap BUY on the most this week, updated all day.' },
+      weekly: { title: 'WEEKLY DROPS', body: 'Every week’s new finds on one page, also posted in the Discord every Sunday.' },
+    },
+  },
   categories: {},
 }
 
 const fr: Messages = {
   section: {
     drops: 'NOUVEAUTÉS',
+    trending: 'TENDANCES',
     archive: 'CATALOGUE',
     sellers: 'VENDEURS',
     manifesto: 'COMMENT ACHETER',
@@ -383,6 +551,7 @@ const fr: Messages = {
   },
   tab: {
     drops: 'Nouveautés',
+    trending: 'Tendances',
     archive: 'Catalogue',
     sellers: 'Vendeurs',
     manifesto: 'Comment acheter',
@@ -532,7 +701,7 @@ const fr: Messages = {
     tapToCopy: 'touche pour copier',
     copied: 'copié !',
     bodyBefore: 'Débloque ',
-    highlight: 'plus de 300 $ de coupons exclusifs',
+    highlight: 'plus de 400 $ de coupons exclusifs',
     bodyAfter: ', pour une durée limitée. Ne rate pas le drop.',
     claim: 'Récupérer les coupons',
     noThanks: 'Non merci',
@@ -551,6 +720,86 @@ const fr: Messages = {
     currency: 'DEVISE',
     aria: 'Langue et devise',
     rate: (r, live) => `1 $ ≈ ${r} €${live ? ' · taux BCE du jour' : ''}`,
+  },
+  video: {
+    title: 'REGARDE LE GUIDE',
+    note: 'Toutes les étapes sur Kakobuy en 84 secondes. Sans son, sous-titres à l’écran (en anglais).',
+  },
+  codes: {
+    title: 'CODES LIVRAISON',
+    how: 'Sur Kakobuy : Mine → Coupon → Exchange, tape le code, puis choisis-le dans la ligne Coupon avant de payer la livraison.',
+    fashionsea: '−20 % sur la livraison',
+    seafinds: '−15 $',
+    tapToCopy: 'TOUCHE POUR COPIER',
+    copied: 'COPIÉ !',
+    copyAria: (code) => `Copier le code ${code}`,
+  },
+  shared: {
+    title: 'LISTE PARTAGÉE',
+    lead: (n) => `${formatCount('fr', n)} ${n > 1 ? 'trouvailles partagées' : 'trouvaille partagée'} avec toi.`,
+    saveAll: 'TOUT AJOUTER À MES FAVORIS',
+    added: (n) => `${formatCount('fr', n)} ${n > 1 ? 'ajoutés' : 'ajouté'} à tes favoris.`,
+    allThere: 'Tout est déjà dans tes favoris.',
+    openMine: 'OUVRIR MES FAVORIS',
+    unavailable: (n) => `${n} ${n > 1 ? 'articles de cette liste ne sont plus disponibles' : 'article de cette liste n’est plus disponible'}.`,
+    empty: 'PLUS RIEN DANS CETTE LISTE',
+    shareList: 'PARTAGER MA LISTE',
+    shareTitle: (n) => `Mes favoris Fashion Sea (${n})`,
+    limit: (n) => `Le lien contient tes ${n} favoris les plus récents.`,
+  },
+  trending: {
+    intro: 'Les trouvailles les plus achetées ces 7 derniers jours (clics sur ACHETER). Mis à jour toute la journée.',
+    warming: 'Les tendances se remplissent quand les gens touchent ACHETER. En attendant, voici les dernières nouveautés.',
+    hot: 'TENDANCE',
+    taps: (n) => `${formatCount('fr', n)} ${n > 1 ? 'clics' : 'clic'} cette semaine`,
+  },
+  week: {
+    title: (n) => `SEMAINE ${n}`,
+    lead: (count, range) => `${formatCount('fr', count)} ${count > 1 ? 'nouvelles trouvailles ajoutées' : 'nouvelle trouvaille ajoutée'} ${range}.`,
+    top: 'LES PLUS CONVOITÉS DE LA SEMAINE',
+    all: 'TOUTES LES NOUVEAUTÉS DE LA SEMAINE',
+    prev: 'SEMAINE PRÉCÉDENTE',
+    next: 'SEMAINE SUIVANTE',
+    empty: 'PAS ENCORE DE NOUVEAUTÉS CETTE SEMAINE',
+    latestLink: 'NOUVEAUTÉS DE LA SEMAINE',
+  },
+  gate: {
+    kicker: 'AVANT D’ACHETER',
+    title: 'PREMIÈRE FOIS SUR KAKOBUY ?',
+    body: 'Kakobuy achète l’article en Chine et te l’envoie. Crée d’abord ton compte avec notre lien : les nouveaux comptes reçoivent plus de 400 $ de coupons.',
+    newHere: 'JE SUIS NOUVEAU · CRÉER MON COMPTE',
+    newHereSub: '+ 400 $ de coupons, puis reviens ici',
+    haveAccount: 'J’AI DÉJÀ UN COMPTE',
+    howItWorks: 'COMMENT ÇA MARCHE (VIDÉO)',
+    kickerDone: 'ÉTAPE SUIVANTE',
+    titleDone: 'COMPTE CRÉÉ ?',
+    bodyDone: 'Une fois inscrit dans l’autre onglet, ouvre l’article : il t’attend sur Kakobuy.',
+    openItem: 'OUVRIR L’ARTICLE',
+  },
+  whatsNew: {
+    button: 'NOUVEAUTÉS DU SITE',
+    kickerNew: 'BIENVENUE',
+    titleNew: 'COMMENT MARCHE FASHION SEA',
+    leadNew: 'Des milliers de trouvailles avec des liens Kakobuy directs. Voici la visite rapide.',
+    kickerBack: 'MISE À JOUR',
+    titleBack: 'QUOI DE NEUF',
+    leadBack: 'Fashion Sea a reçu une grosse mise à jour. Voici tout ce qui change.',
+    gotIt: 'COMPRIS',
+    open: 'OUVRIR',
+    cards: {
+      find: { title: 'TROUVE UNE PIÈCE', body: 'Nouveautés montre les trouvailles de la semaine. Le Catalogue contient tout, avec recherche et filtres.' },
+      favs: { title: 'GARDE CE QUI TE PLAÎT', body: 'Touche le ♥ sur n’importe quel article pour le garder dans Mes favoris. Sans compte, sans inscription.' },
+      shareFavs: { title: 'PARTAGE TES FAVORIS', body: 'Envoie toute ta liste en un seul lien. Tes potes peuvent l’ajouter à leurs favoris en un geste.' },
+      buy: { title: 'ACHÈTE AVEC KAKOBUY', body: 'Touche ACHETER et l’article s’ouvre sur Kakobuy. Première fois ? Comment acheter t’explique tout.' },
+      video: { title: 'COMMENT ACHETER, EN VIDÉO', body: 'Une courte vidéo de chaque étape sur Kakobuy, de la page de l’article au coupon de livraison.' },
+      codes: { title: 'CODES LIVRAISON', body: 'Fashionsea = −20 % sur la livraison, seafinds = −15 $. Utilise-les quand tu envoies ton colis.' },
+      prefs: { title: 'TA LANGUE, TA DEVISE', body: 'English, Français, Русский ou Polski, et les prix en $ ou en €. Touche le bouton FR · € pour changer.' },
+      search: { title: 'UNE RECHERCHE PLUS MALINE', body: 'Les fautes de frappe passent et les raccourcis marchent (cdg, lv, af1). Sur téléphone, touche FILTRES pour les catégories et les marques.' },
+      items: { title: 'UNE PAGE PAR TROUVAILLE', body: 'Chaque article a son propre lien avec un aperçu photo. Partage-le sur WhatsApp, Discord, Instagram et ailleurs.' },
+      links: { title: 'LIENS VÉRIFIÉS CHAQUE SEMAINE', body: 'Chaque lien Kakobuy est vérifié toutes les semaines, pour enlever vite ceux qui sont morts.' },
+      trending: { title: 'LES TENDANCES', body: 'Vois les trouvailles les plus achetées de la semaine, mises à jour toute la journée.' },
+      weekly: { title: 'NOUVEAUTÉS DE LA SEMAINE', body: 'Toutes les trouvailles de la semaine sur une seule page, aussi postées sur le Discord chaque dimanche.' },
+    },
   },
   categories: {
     PANTS: 'PANTALONS',
@@ -592,6 +841,7 @@ const ruForms = (one: string, few: string, many: string): Forms => ({ one, few, 
 const ru: Messages = {
   section: {
     drops: 'НОВИНКИ',
+    trending: 'В ТРЕНДЕ',
     archive: 'КАТАЛОГ',
     sellers: 'ПРОДАВЦЫ',
     manifesto: 'КАК КУПИТЬ',
@@ -601,6 +851,7 @@ const ru: Messages = {
   },
   tab: {
     drops: 'Новинки',
+    trending: 'В тренде',
     archive: 'Каталог',
     sellers: 'Продавцы',
     manifesto: 'Как купить',
@@ -748,7 +999,7 @@ const ru: Messages = {
     tapToCopy: 'нажми, чтобы скопировать',
     copied: 'скопировано!',
     bodyBefore: 'Получи ',
-    highlight: 'эксклюзивные купоны на $300+',
+    highlight: 'эксклюзивные купоны на $400+',
     bodyAfter: ' — только ограниченное время. Не пропусти дроп.',
     claim: 'Забрать купоны',
     noThanks: 'Нет, спасибо',
@@ -767,6 +1018,86 @@ const ru: Messages = {
     currency: 'ВАЛЮТА',
     aria: 'Язык и валюта',
     rate: (r, live) => `1 $ ≈ ${r} €${live ? ' · курс ЕЦБ на сегодня' : ''}`,
+  },
+  video: {
+    title: 'СМОТРИ ГАЙД',
+    note: 'Все шаги на Kakobuy за 84 секунды. Без звука, подписи на экране (на английском).',
+  },
+  codes: {
+    title: 'КОДЫ НА ДОСТАВКУ',
+    how: 'На Kakobuy: Mine → Coupon → Exchange, введи код, а потом выбери его в строке Coupon перед оплатой доставки.',
+    fashionsea: '−20% на доставку',
+    seafinds: '−$15',
+    tapToCopy: 'НАЖМИ, ЧТОБЫ СКОПИРОВАТЬ',
+    copied: 'СКОПИРОВАНО!',
+    copyAria: (code) => `Скопировать код ${code}`,
+  },
+  shared: {
+    title: 'ОБЩИЙ СПИСОК',
+    lead: (n) => `С тобой поделились: ${formatCount('ru', n)} ${plural('ru', n, ruForms('находка', 'находки', 'находок'))}.`,
+    saveAll: 'ДОБАВИТЬ ВСЁ В ИЗБРАННОЕ',
+    added: (n) => `Добавлено в избранное: ${formatCount('ru', n)}.`,
+    allThere: 'Всё это уже в твоём избранном.',
+    openMine: 'ОТКРЫТЬ МОЁ ИЗБРАННОЕ',
+    unavailable: (n) => `Товары из этого списка, которых больше нет: ${n}.`,
+    empty: 'В ЭТОМ СПИСКЕ БОЛЬШЕ НИЧЕГО НЕТ',
+    shareList: 'ПОДЕЛИТЬСЯ СПИСКОМ',
+    shareTitle: (n) => `Моё избранное на Fashion Sea (${n})`,
+    limit: (n) => `В ссылку попадут ${n} последних добавленных товаров.`,
+  },
+  trending: {
+    intro: 'Находки, на которые чаще всего нажимали «КУПИТЬ» за последние 7 дней. Обновляется весь день.',
+    warming: 'Тренды появятся, когда люди начнут нажимать «КУПИТЬ». А пока вот самые свежие новинки.',
+    hot: 'В ТРЕНДЕ',
+    taps: (n) => `${formatCount('ru', n)} ${plural('ru', n, ruForms('нажатие', 'нажатия', 'нажатий'))} за неделю`,
+  },
+  week: {
+    title: (n) => `НЕДЕЛЯ ${n}`,
+    lead: (count, range) => `Новинок за ${range}: ${formatCount('ru', count)}.`,
+    top: 'САМОЕ ПОПУЛЯРНОЕ ЗА НЕДЕЛЮ',
+    all: 'ВСЕ НОВИНКИ НЕДЕЛИ',
+    prev: 'ПРЕДЫДУЩАЯ НЕДЕЛЯ',
+    next: 'СЛЕДУЮЩАЯ НЕДЕЛЯ',
+    empty: 'НА ЭТОЙ НЕДЕЛЕ НОВИНОК ПОКА НЕТ',
+    latestLink: 'НОВИНКИ НЕДЕЛИ',
+  },
+  gate: {
+    kicker: 'ПЕРЕД ПОКУПКОЙ',
+    title: 'ВПЕРВЫЕ НА KAKOBUY?',
+    body: 'Kakobuy выкупает товар в Китае и отправляет его тебе. Сначала создай аккаунт по нашей ссылке: новые аккаунты получают купоны на $400+.',
+    newHere: 'Я НОВИЧОК · СОЗДАТЬ АККАУНТ',
+    newHereSub: '+ купоны на $400+, потом вернись сюда',
+    haveAccount: 'У МЕНЯ УЖЕ ЕСТЬ АККАУНТ',
+    howItWorks: 'КАК ЭТО РАБОТАЕТ (ВИДЕО)',
+    kickerDone: 'СЛЕДУЮЩИЙ ШАГ',
+    titleDone: 'АККАУНТ ГОТОВ?',
+    bodyDone: 'Когда зарегистрируешься в другой вкладке, открой товар: он будет ждать тебя на Kakobuy.',
+    openItem: 'ОТКРЫТЬ ТОВАР',
+  },
+  whatsNew: {
+    button: 'ЧТО НОВОГО',
+    kickerNew: 'ДОБРО ПОЖАЛОВАТЬ',
+    titleNew: 'КАК УСТРОЕН FASHION SEA',
+    leadNew: 'Тысячи находок с прямыми ссылками на Kakobuy. Вот короткий обзор.',
+    kickerBack: 'ОБНОВЛЕНИЕ',
+    titleBack: 'ЧТО НОВОГО',
+    leadBack: 'Fashion Sea сильно обновился. Вот всё, что изменилось.',
+    gotIt: 'ПОНЯТНО',
+    open: 'ОТКРЫТЬ',
+    cards: {
+      find: { title: 'НАЙДИ ВЕЩЬ', body: 'В Новинках — находки этой недели. В Каталоге — всё сразу, с поиском и фильтрами.' },
+      favs: { title: 'СОХРАНЯЙ ПОНРАВИВШЕЕСЯ', body: 'Нажми ♥ на любом товаре, чтобы сохранить его в Избранное. Без аккаунта и регистрации.' },
+      shareFavs: { title: 'ДЕЛИСЬ ИЗБРАННЫМ', body: 'Отправь весь список одной ссылкой. Друзья смогут сохранить его к себе одним нажатием.' },
+      buy: { title: 'ПОКУПАЙ ЧЕРЕЗ KAKOBUY', body: 'Нажми КУПИТЬ — товар откроется на Kakobuy. Первый раз? В разделе «Как купить» всё объяснено.' },
+      video: { title: 'КАК КУПИТЬ — В ВИДЕО', body: 'Короткое видео со всеми шагами на Kakobuy: от страницы товара до купона на доставку.' },
+      codes: { title: 'КОДЫ НА ДОСТАВКУ', body: 'Fashionsea = −20% на доставку, seafinds = −$15. Используй их, когда отправляешь посылку.' },
+      prefs: { title: 'ТВОЙ ЯЗЫК, ТВОЯ ВАЛЮТА', body: 'English, Français, Русский или Polski и цены в $ или €. Нажми кнопку RU · $, чтобы переключить.' },
+      search: { title: 'УМНЫЙ ПОИСК', body: 'Опечатки не страшны, сокращения работают (cdg, lv, af1). На телефоне нажми ФИЛЬТРЫ, чтобы выбрать категорию и бренд.' },
+      items: { title: 'СТРАНИЦА ДЛЯ КАЖДОЙ НАХОДКИ', body: 'У каждого товара своя ссылка с превью и фото. Делись ею в WhatsApp, Discord, Instagram и не только.' },
+      links: { title: 'ССЫЛКИ ПРОВЕРЯЮТСЯ КАЖДУЮ НЕДЕЛЮ', body: 'Каждую неделю все ссылки Kakobuy проверяются, и нерабочие быстро убираются.' },
+      trending: { title: 'ЧТО В ТРЕНДЕ', body: 'Смотри, на какие находки чаще всего нажимают «КУПИТЬ» на этой неделе. Обновляется весь день.' },
+      weekly: { title: 'НОВИНКИ НЕДЕЛИ', body: 'Все новинки недели на одной странице, а по воскресеньям — пост в Discord.' },
+    },
   },
   categories: {
     PANTS: 'БРЮКИ',
@@ -808,6 +1139,7 @@ const plForms = (one: string, few: string, many: string): Forms => ({ one, few, 
 const pl: Messages = {
   section: {
     drops: 'NOWOŚCI',
+    trending: 'NA CZASIE',
     archive: 'KATALOG',
     sellers: 'SPRZEDAWCY',
     manifesto: 'JAK KUPIĆ',
@@ -817,6 +1149,7 @@ const pl: Messages = {
   },
   tab: {
     drops: 'Nowości',
+    trending: 'Na czasie',
     archive: 'Katalog',
     sellers: 'Sprzedawcy',
     manifesto: 'Jak kupić',
@@ -964,7 +1297,7 @@ const pl: Messages = {
     tapToCopy: 'dotknij, aby skopiować',
     copied: 'skopiowano!',
     bodyBefore: 'Odbierz ',
-    highlight: 'ekskluzywne kupony o wartości $300+',
+    highlight: 'ekskluzywne kupony o wartości $400+',
     bodyAfter: ' — tylko przez ograniczony czas. Nie przegap dropu.',
     claim: 'Odbierz kupony',
     noThanks: 'Nie, dzięki',
@@ -983,6 +1316,86 @@ const pl: Messages = {
     currency: 'WALUTA',
     aria: 'Język i waluta',
     rate: (r, live) => `1 $ ≈ ${r} €${live ? ' · dzisiejszy kurs EBC' : ''}`,
+  },
+  video: {
+    title: 'OBEJRZYJ PORADNIK',
+    note: 'Wszystkie kroki na Kakobuy w 84 sekundy. Bez dźwięku, napisy na ekranie (po angielsku).',
+  },
+  codes: {
+    title: 'KODY NA WYSYŁKĘ',
+    how: 'Na Kakobuy: Mine → Coupon → Exchange, wpisz kod, a potem wybierz go w wierszu Coupon przed zapłatą za wysyłkę.',
+    fashionsea: '−20% na wysyłkę',
+    seafinds: '−15 $',
+    tapToCopy: 'DOTKNIJ, ABY SKOPIOWAĆ',
+    copied: 'SKOPIOWANO!',
+    copyAria: (code) => `Skopiuj kod ${code}`,
+  },
+  shared: {
+    title: 'UDOSTĘPNIONA LISTA',
+    lead: (n) => `Ktoś udostępnił ci ${formatCount('pl', n)} ${plural('pl', n, plForms('znalezisko', 'znaleziska', 'znalezisk'))}.`,
+    saveAll: 'DODAJ WSZYSTKO DO ULUBIONYCH',
+    added: (n) => `Dodano do ulubionych: ${formatCount('pl', n)}.`,
+    allThere: 'Wszystko to masz już w ulubionych.',
+    openMine: 'OTWÓRZ MOJE ULUBIONE',
+    unavailable: (n) => `Produkty z tej listy, których już nie ma: ${n}.`,
+    empty: 'NA TEJ LIŚCIE NIC JUŻ NIE ZOSTAŁO',
+    shareList: 'UDOSTĘPNIJ MOJĄ LISTĘ',
+    shareTitle: (n) => `Moje ulubione na Fashion Sea (${n})`,
+    limit: (n) => `Link zawiera ${n} ostatnio dodanych ulubionych.`,
+  },
+  trending: {
+    intro: 'Znaleziska, przy których najczęściej klikano KUP w ostatnich 7 dniach. Aktualizowane przez cały dzień.',
+    warming: 'Lista zapełni się, gdy ludzie zaczną klikać KUP. Na razie oto najnowsze dropy.',
+    hot: 'NA CZASIE',
+    taps: (n) => `${formatCount('pl', n)} ${plural('pl', n, plForms('kliknięcie', 'kliknięcia', 'kliknięć'))} w tym tygodniu`,
+  },
+  week: {
+    title: (n) => `TYDZIEŃ ${n}`,
+    lead: (count, range) => `Nowe znaleziska ${range}: ${formatCount('pl', count)}.`,
+    top: 'NAJPOPULARNIEJSZE W TYM TYGODNIU',
+    all: 'WSZYSTKIE NOWOŚCI TYGODNIA',
+    prev: 'POPRZEDNI TYDZIEŃ',
+    next: 'NASTĘPNY TYDZIEŃ',
+    empty: 'W TYM TYGODNIU NIE MA JESZCZE NOWOŚCI',
+    latestLink: 'NOWOŚCI TYGODNIA',
+  },
+  gate: {
+    kicker: 'ZANIM KUPISZ',
+    title: 'PIERWSZY RAZ NA KAKOBUY?',
+    body: 'Kakobuy kupuje produkt w Chinach i wysyła go do ciebie. Najpierw załóż konto przez nasz link: nowe konta dostają kupony o wartości $400+.',
+    newHere: 'JESTEM NOWY · ZAŁÓŻ KONTO',
+    newHereSub: '+ kupony o wartości $400+, potem wróć tutaj',
+    haveAccount: 'MAM JUŻ KONTO',
+    howItWorks: 'JAK TO DZIAŁA (WIDEO)',
+    kickerDone: 'NASTĘPNY KROK',
+    titleDone: 'KONTO GOTOWE?',
+    bodyDone: 'Gdy zarejestrujesz się w drugiej karcie, otwórz produkt: będzie na ciebie czekał na Kakobuy.',
+    openItem: 'OTWÓRZ PRODUKT',
+  },
+  whatsNew: {
+    button: 'CO NOWEGO',
+    kickerNew: 'WITAJ',
+    titleNew: 'JAK DZIAŁA FASHION SEA',
+    leadNew: 'Tysiące znalezisk z bezpośrednimi linkami do Kakobuy. Oto szybki przegląd.',
+    kickerBack: 'AKTUALIZACJA',
+    titleBack: 'CO NOWEGO',
+    leadBack: 'Fashion Sea dostało dużą aktualizację. Oto wszystko, co się zmieniło.',
+    gotIt: 'ROZUMIEM',
+    open: 'OTWÓRZ',
+    cards: {
+      find: { title: 'ZNAJDŹ COŚ DLA SIEBIE', body: 'W Nowościach są znaleziska z tego tygodnia. W Katalogu jest wszystko, z wyszukiwarką i filtrami.' },
+      favs: { title: 'ZAPISUJ TO, CO LUBISZ', body: 'Kliknij ♥ przy dowolnym produkcie, żeby zapisać go w Ulubionych. Bez konta i bez rejestracji.' },
+      shareFavs: { title: 'UDOSTĘPNIAJ ULUBIONE', body: 'Wyślij całą listę jednym linkiem. Znajomi zapiszą ją u siebie jednym kliknięciem.' },
+      buy: { title: 'KUPUJ PRZEZ KAKOBUY', body: 'Kliknij KUP, a produkt otworzy się na Kakobuy. Pierwszy raz? W „Jak kupić” wszystko jest wyjaśnione.' },
+      video: { title: 'JAK KUPIĆ — NA WIDEO', body: 'Krótkie wideo ze wszystkimi krokami na Kakobuy: od strony produktu do kuponu na wysyłkę.' },
+      codes: { title: 'KODY NA WYSYŁKĘ', body: 'Fashionsea = −20% na wysyłkę, seafinds = −15 $. Użyj ich, kiedy wysyłasz paczkę.' },
+      prefs: { title: 'TWÓJ JĘZYK, TWOJA WALUTA', body: 'English, Français, Русский albo Polski i ceny w $ lub €. Kliknij przycisk PL · €, żeby to zmienić.' },
+      search: { title: 'MĄDRZEJSZE WYSZUKIWANIE', body: 'Literówki nie przeszkadzają, a skróty działają (cdg, lv, af1). Na telefonie kliknij FILTRY, żeby wybrać kategorię i markę.' },
+      items: { title: 'STRONA DLA KAŻDEGO ZNALEZISKA', body: 'Każdy produkt ma własny link z podglądem zdjęcia. Udostępnij go na WhatsAppie, Discordzie, Instagramie i nie tylko.' },
+      links: { title: 'LINKI SPRAWDZANE CO TYDZIEŃ', body: 'Co tydzień sprawdzamy każdy link do Kakobuy, żeby szybko usuwać te, które nie działają.' },
+      trending: { title: 'CO JEST NA CZASIE', body: 'Zobacz znaleziska, przy których najczęściej klika się KUP w tym tygodniu. Aktualizowane przez cały dzień.' },
+      weekly: { title: 'NOWOŚCI TYGODNIA', body: 'Wszystkie nowe znaleziska z tygodnia na jednej stronie, w każdą niedzielę także na Discordzie.' },
+    },
   },
   categories: {
     PANTS: 'SPODNIE',

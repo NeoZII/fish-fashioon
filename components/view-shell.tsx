@@ -15,6 +15,9 @@ export function ViewShell({
   toolbar,
   children,
   hideFavouritesLink = false,
+  shareUrl,
+  shareTitle,
+  sharePreview,
 }: {
   /** Menu position (e.g. "02"); accepted for compatibility, not rendered. */
   index?: string
@@ -27,6 +30,11 @@ export function ViewShell({
   children: ReactNode
   /** Hide the header heart shortcut (on the Favourites page itself). */
   hideFavouritesLink?: boolean
+  /** What the header Share button shares (defaults to this page). */
+  shareUrl?: string
+  shareTitle?: string
+  /** Share-card image to warm up when Share is pressed. */
+  sharePreview?: string
 }) {
   const t = useT()
   const barClass = accent === 'fav' ? 'bg-fav' : accent === 'primary' ? 'bg-primary' : 'bg-secondary'
@@ -50,7 +58,15 @@ export function ViewShell({
             <PrefsSwitch />
             {/* Favourites are per-browser, so that page has no shortcut or share. */}
             {!hideFavouritesLink && <FavouritesLink />}
-            {!hideFavouritesLink && <ShareButton title={`${title} · Fashion Sea`} align="right" compact />}
+            {!hideFavouritesLink && (
+              <ShareButton
+                url={shareUrl}
+                title={shareTitle ?? `${title} · Fashion Sea`}
+                previewImage={sharePreview}
+                align="right"
+                compact
+              />
+            )}
           </div>
         </header>
         {toolbar ? <div className="border-t border-border">{toolbar}</div> : null}

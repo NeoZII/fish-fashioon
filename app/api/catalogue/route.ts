@@ -31,6 +31,9 @@ export async function GET() {
   return Response.json(items, {
     headers: {
       'Cache-Control': `public, max-age=60, s-maxage=${CATALOGUE_REVALIDATE}, stale-while-revalidate=86400`,
+      // Public data. Readable from other sites so the weekly dead-link check
+      // (scripts/kakobuy-link-check.js, run from a Kakobuy tab) can load it.
+      'Access-Control-Allow-Origin': '*',
       ...(rates ? { [FX_HEADER]: JSON.stringify(rates) } : {}),
     },
   })

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Heart } from 'lucide-react'
+import { Flame, Heart, Sparkles } from 'lucide-react'
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from 'react'
 import { MENU_ITEMS, recentItems, type MenuItem, type Product } from '@/lib/data'
 import { ProductSlideshow } from '@/components/product-slideshow'
@@ -12,9 +12,15 @@ import { PrefsSwitch } from '@/components/prefs-switch'
 export function P3Menu({
   onNavigate,
   items = [],
+  onWhatsNew,
+  whatsNewUnseen = false,
 }: {
   onNavigate: (id: MenuItem['id']) => void
   items?: Product[]
+  /** Opens the "What's new" guide. */
+  onWhatsNew?: () => void
+  /** Pulse the button until this release's guide has been read. */
+  whatsNewUnseen?: boolean
 }) {
   const [active, setActive] = useState(0)
   // Live "NEW" counter for Latest Drops; appears once the catalogue has loaded.
@@ -184,6 +190,14 @@ export function P3Menu({
                         : {}),
                   }}
                 >
+                  {item.flame && (
+                    <Flame
+                      aria-hidden
+                      className={`size-[0.62em] shrink-0 -translate-y-[0.04em] ${isActive ? 'text-orange-600' : 'text-orange-400'}`}
+                      fill="currentColor"
+                      strokeWidth={0}
+                    />
+                  )}
                   {item.glowFav && (
                     <Heart
                       aria-hidden
@@ -234,9 +248,26 @@ export function P3Menu({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9, duration: 0.5 }}
-        className="absolute bottom-5 left-5 z-30 md:bottom-6 md:left-8"
+        className="absolute bottom-5 left-5 z-30 flex items-center gap-2 md:bottom-6 md:left-8"
       >
         <PrefsSwitch align="left" direction="up" />
+        {onWhatsNew && (
+          <button
+            type="button"
+            onClick={onWhatsNew}
+            className="relative flex min-h-[44px] items-center gap-1.5 border border-border bg-background/60 px-3 font-mono text-[11px] font-bold tracking-[0.2em] text-foreground transition-colors hover:border-fav hover:text-fav"
+            style={{ transform: 'skewX(-8deg)' }}
+          >
+            <Sparkles className={`size-4 ${whatsNewUnseen ? 'text-fav' : ''}`} aria-hidden />
+            {t.whatsNew.button}
+            {whatsNewUnseen && (
+              <span className="absolute -right-1.5 -top-1.5 flex size-3" aria-hidden>
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-fav opacity-75" />
+                <span className="relative inline-flex size-3 rounded-full bg-fav" />
+              </span>
+            )}
+          </button>
+        )}
       </motion.div>
 
       {/* hint */}

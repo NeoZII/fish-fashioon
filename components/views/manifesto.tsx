@@ -3,9 +3,11 @@
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { ViewShell } from '@/components/view-shell'
+import { onSignupClick, SIGNUP_URL } from '@/lib/buy-gate'
+import { HowToBuyVideo } from '@/components/how-to-buy-video'
+import { CouponCodes } from '@/components/coupon-codes'
 import { useT } from '@/lib/prefs'
 
-const SIGNUP_URL = 'https://ikako.vip/r/dqh2u'
 
 export function Manifesto({ onBack }: { onBack: () => void }) {
   const t = useT()
@@ -15,14 +17,17 @@ export function Manifesto({ onBack }: { onBack: () => void }) {
         {t.manifesto.intro}
       </div>
 
+      {/* Phones: CTA, video, steps. Desktop: video + codes in a sticky left column. */}
+      <div className="grid grid-cols-1 gap-x-14 lg:grid-cols-[340px_minmax(0,1fr)] lg:grid-rows-[auto_1fr]">
       <motion.a
         href={SIGNUP_URL}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => onSignupClick('howtobuy')}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15 }}
-        className="mb-12 flex min-h-[52px] w-full items-center justify-between gap-4 bg-primary px-6 py-4 text-primary-foreground transition-colors hover:bg-foreground hover:text-background sm:w-auto"
+        className="mb-12 flex min-h-[52px] w-full items-center justify-between gap-4 self-start bg-primary px-6 py-4 text-primary-foreground transition-colors hover:bg-foreground hover:text-background sm:w-auto sm:justify-self-start lg:col-start-2 lg:row-start-1"
       >
         <span className="flex flex-col gap-1 text-left">
           <span className="font-mono text-sm font-bold uppercase tracking-[0.2em]">
@@ -35,7 +40,19 @@ export function Manifesto({ onBack }: { onBack: () => void }) {
         <ArrowUpRight className="size-5 shrink-0" />
       </motion.a>
 
-      <div className="flex flex-col gap-px border-y border-border bg-border">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mb-12 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:mb-0"
+      >
+        <div className="lg:sticky lg:top-28">
+          <HowToBuyVideo />
+          <CouponCodes />
+        </div>
+      </motion.div>
+
+      <div className="flex flex-col gap-px self-start border-y border-border bg-border lg:col-start-2 lg:row-start-2">
         {t.manifesto.steps.map((s, i) => (
           <motion.div
             key={i}
@@ -57,6 +74,7 @@ export function Manifesto({ onBack }: { onBack: () => void }) {
             </div>
           </motion.div>
         ))}
+      </div>
       </div>
     </ViewShell>
   )

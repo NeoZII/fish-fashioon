@@ -29,38 +29,60 @@ export default async function Image({ params }: { params: Promise<{ keys: string
     readFile(join(fontDir, 'geist-mono-latin-700-normal.woff')),
   ])
 
-  const photos = await Promise.all(items.slice(0, 4).map((i) => loadOgPhoto(i.image)))
+  // Up to 4 photos, from the first 8 items (some image hosts refuse servers).
+  const loaded = await Promise.all(items.slice(0, 8).map((i) => loadOgPhoto(i.image)))
+  const photos = loaded.filter((p): p is string => Boolean(p)).slice(0, 4)
   const n = items.length
-  const tiles = [0, 1, 2, 3]
+
+  const photo = (src: string, w: number, h: number) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt="" width={w} height={h} style={{ width: w, height: h, objectFit: 'cover' }} />
+  )
+  const GAP = 3
+  const half = (630 - GAP) / 2
+  // 0 photos: logo tile · 1: full square · 2: two columns · 3: one big + two small · 4: 2×2
+  let collage
+  if (photos.length === 0) {
+    collage = (
+      <div style={{ width: 630, height: 630, display: 'flex', alignItems: 'center', justifyContent: 'center', background: TILE }}>
+        <div style={{ display: 'flex', fontFamily: 'Anton', fontSize: 200, color: '#26262c' }}>FS</div>
+      </div>
+    )
+  } else if (photos.length === 1) {
+    collage = <div style={{ width: 630, height: 630, display: 'flex' }}>{photo(photos[0], 630, 630)}</div>
+  } else if (photos.length === 2) {
+    collage = (
+      <div style={{ width: 630, height: 630, display: 'flex', justifyContent: 'space-between' }}>
+        {photo(photos[0], half, 630)}
+        {photo(photos[1], half, 630)}
+      </div>
+    )
+  } else {
+    const right = photos.length === 3 ? [photos[1], photos[2]] : null
+    collage =
+      right ? (
+        <div style={{ width: 630, height: 630, display: 'flex', justifyContent: 'space-between' }}>
+          {photo(photos[0], half, 630)}
+          <div style={{ width: half, height: 630, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            {photo(right[0], half, half)}
+            {photo(right[1], half, half)}
+          </div>
+        </div>
+      ) : (
+        <div style={{ width: 630, height: 630, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignContent: 'space-between' }}>
+          {photos.map((src, i) => (
+            <div key={i} style={{ display: 'flex' }}>
+              {photo(src, half, half)}
+            </div>
+          ))}
+        </div>
+      )
+  }
 
   const png = new ImageResponse(
     (
       <div style={{ width: 1200, height: 630, display: 'flex', background: BG }}>
-        {/* 2×2 photo grid */}
-        <div style={{ width: 630, height: 630, display: 'flex', flexWrap: 'wrap' }}>
-          {tiles.map((i) => (
-            <div
-              key={i}
-              style={{
-                width: 315,
-                height: 315,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: TILE,
-                borderRight: i % 2 === 0 ? `3px solid ${BG}` : 'none',
-                borderBottom: i < 2 ? `3px solid ${BG}` : 'none',
-              }}
-            >
-              {photos[i] ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photos[i] as string} alt="" width={315} height={315} style={{ width: 315, height: 315, objectFit: 'cover' }} />
-              ) : (
-                <div style={{ display: 'flex', fontFamily: 'Anton', fontSize: 90, color: '#26262c' }}>FS</div>
-              )}
-            </div>
-          ))}
-        </div>
+        {collage}
 
         <div style={{ width: 10, height: 630, display: 'flex', background: PINK }} />
 

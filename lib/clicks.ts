@@ -103,6 +103,37 @@ export async function topItems(days: string[], limit = 60): Promise<{ key: strin
     .slice(0, limit)
 }
 
+/**
+ * Same as topItems, for pages that are rebuilt every few minutes (the weekly
+ * page and its share card). The Redis client always fetches with `no-store`,
+ * which Next.js refuses inside such pages ("changed from static to dynamic"),
+ * so this asks Upstash's REST pipeline directly with a 5-minute cache.
+ */
+export async function topItemsCached(days: string[], limit = 60): Promise<{ key: string; n: number }[]> {
+  if (!url || !token || !days.length) return []
+  const res = await fetch(`${url.replace(/\/$/, '')}/pipeline`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(days.map((d) => ['ZRANGE', `c:buy:${d}`, '0', '299', 'REV', 'WITHSCORES'])),
+    next: { revalidate: 300 },
+  })
+  if (!res.ok) throw new Error(`Click data unavailable (${res.status})`)
+  const results = (await res.json()) as { result?: unknown; error?: string }[]
+  const total = new Map<string, number>()
+  for (const r of results) {
+    const flat = r?.result
+    if (!Array.isArray(flat)) continue
+    for (let i = 0; i + 1 < flat.length; i += 2) {
+      const key = String(flat[i])
+      total.set(key, (total.get(key) ?? 0) + Number(flat[i + 1]))
+    }
+  }
+  return [...total.entries()]
+    .map(([key, n]) => ({ key, n }))
+    .sort((a, b) => b.n - a.n || a.key.localeCompare(b.key))
+    .slice(0, limit)
+}
+
 /** Run once per `id` (e.g. the weekly Discord post). False if it already ran. */
 export async function claimOnce(id: string, ttlSeconds: number): Promise<boolean> {
   if (!redis) return false

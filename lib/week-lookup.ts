@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import { getCatalogue } from './catalogue'
-import { topItems } from './clicks'
+import { topItemsCached } from './clicks'
 import type { Product } from './data'
 import { MIN_TAPS_SERVER } from './trending-rules'
 import { addedInWeek, currentWeek, parseWeekId, shiftWeek, type Week } from './weeks'
@@ -33,7 +33,7 @@ export const getWeekData = cache(async (id: string): Promise<WeekData | null> =>
   let top: Product[] = []
   try {
     const byKey = new Map(items.map((p) => [p.key, p]))
-    const taps = await topItems(week.days, 200)
+    const taps = await topItemsCached(week.days, 200)
     top = taps
       .filter((t) => t.n >= MIN_TAPS_SERVER && byKey.has(t.key))
       .slice(0, 8)

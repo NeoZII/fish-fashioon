@@ -137,7 +137,10 @@ export function ProductGrid({
   const t = useT()
   const formatPrice = usePriceFormatter()
   const { rank } = useTrending()
-  const [ordered, setOrdered] = useState<Product[]>([])
+  // Shuffled order (only when shuffleItems). Unshuffled grids use `items` as
+  // they are, so they render on the server too: week pages, shared lists and
+  // the like ship their cards in the HTML for search engines and previews.
+  const [shuffled, setShuffled] = useState<Product[] | null>(null)
   const [visible, setVisible] = useState(BATCH_SIZE)
   const [reportTarget, setReportTarget] = useState<Product | null>(null)
   const [showToast, setShowToast] = useState(false)
@@ -156,7 +159,7 @@ export function ProductGrid({
   const handleShuffle = () => {
     const seed = Math.floor(Math.random() * 0x7fffffff)
     setManualSeed(seed)
-    setOrdered(shuffle(items, seed))
+    setShuffled(shuffle(items, seed))
     setVisible(BATCH_SIZE)
     setShuffleKey((k) => k + 1)
     setSpinning(true)
@@ -167,9 +170,13 @@ export function ProductGrid({
   // (new fetch, category filter, seller switch, or a fresh page load).
   // A manual shuffle seed, if present, is preserved across filter changes.
   useEffect(() => {
-    setOrdered(shuffleItems ? shuffle(items, manualSeed ?? undefined) : items)
+    setShuffled(shuffleItems ? shuffle(items, manualSeed ?? undefined) : null)
     setVisible(BATCH_SIZE)
   }, [items, shuffleItems, manualSeed])
+
+  // A random order can't be decided on the server (it would differ in the
+  // browser), so shuffled grids appear once the browser has shuffled them.
+  const ordered = shuffleItems ? (shuffled ?? []) : items
 
   if (items.length === 0) {
     return (

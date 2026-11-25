@@ -1,6 +1,7 @@
 import { preload } from 'react-dom'
 import { Experience } from '@/components/experience'
 import { CATALOGUE_ENDPOINT } from '@/lib/catalogue-endpoint'
+import { jsonLd, websiteLd } from '@/lib/structured-data'
 
 // The page itself is now a small static shell served from the CDN edge; it no
 // longer embeds the ~1.7 MB catalogue. The catalogue streams in from
@@ -15,5 +16,10 @@ export default function Page() {
   // Start downloading the catalogue in parallel with the JS bundle instead of
   // after hydration. The client fetch in useGlobalItems reuses this request.
   preload(CATALOGUE_ENDPOINT, { as: 'fetch', crossOrigin: 'anonymous' })
-  return <Experience />
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteLd()) }} />
+      <Experience />
+    </>
+  )
 }

@@ -7,6 +7,7 @@ import { getRates } from '@/lib/fx'
 import { parsePrice } from '@/lib/price'
 import { similarItems } from '@/lib/similar'
 import { SITE_NAME, SITE_URL } from '@/lib/site'
+import { jsonLd, productLd } from '@/lib/structured-data'
 
 // Item pages are generated on first visit, cached at the edge and refreshed
 // every 5 minutes (same rhythm as the sheet).
@@ -48,11 +49,14 @@ export default async function ItemPage({ params }: Props) {
   if (decodeURIComponent(slug) !== itemSlug(item)) permanentRedirect(itemPath(item))
 
   return (
-    <ItemView
-      item={item}
-      similar={similarItems(items, item)}
-      shareUrl={`${SITE_URL}${itemPath(item)}`}
-      rates={rates}
-    />
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(productLd(item)) }} />
+      <ItemView
+        item={item}
+        similar={similarItems(items, item)}
+        shareUrl={`${SITE_URL}${itemPath(item)}`}
+        rates={rates}
+      />
+    </>
   )
 }

@@ -9,8 +9,11 @@ import { Redis } from '@upstash/redis'
  *   (one visitor counts once per item per day, so nobody can pump an item).
  * - Visits: one hash per day, source → count. Signup taps: one hash per day,
  *   place → count.
- * Everything expires after 60 days. No personal data is stored: visitors are
- * only seen as a salted hash for the once-a-day check, which expires in 2 days.
+ * Day keys are deleted after 60 days by cleanupOldDays() (run once a week by
+ * the Sunday job) instead of an EXPIRE on every write: the free plan bills
+ * every command, so a counted BUY tap now costs 2 commands instead of 5.
+ * No personal data is stored: visitors are only seen as a salted hash for the
+ * once-a-day check, which expires in 2 days.
  *
  * If the database isn't connected (no env vars), every function is a no-op
  * and Trending simply stays hidden.
@@ -20,7 +23,8 @@ const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
 const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN
 export const redis = url && token ? new Redis({ url, token }) : null
 
-const KEEP_SECONDS = 60 * 24 * 60 * 60
+/** Day counters are kept this many days (Trending uses 7, weekly pages up to ~60). */
+const KEEP_DAYS = 60
 const SEEN_SECONDS = 2 * 24 * 60 * 60
 const TZ = 'Europe/Brussels'
 
@@ -52,23 +56,14 @@ export async function recordBuy(itemKey: string, ip: string, ua: string): Promis
   const day = dayKey()
   const seen = await redis.set(`c:seen:${day}:${visitorHash(ip, ua, itemKey)}`, 1, { nx: true, ex: SEEN_SECONDS })
   if (seen !== 'OK') return false
-  const p = redis.pipeline()
-  p.zincrby(`c:buy:${day}`, 1, itemKey)
-  p.expire(`c:buy:${day}`, KEEP_SECONDS)
-  p.hincrby(`c:stat:${day}`, 'buy', 1)
-  p.expire(`c:stat:${day}`, KEEP_SECONDS)
-  await p.exec()
+  await redis.zincrby(`c:buy:${day}`, 1, itemKey)
   return true
 }
 
 /** Count a visit (first page of a browsing session) by where it came from. */
 export async function recordVisit(source: string): Promise<void> {
   if (!redis) return
-  const day = dayKey()
-  const p = redis.pipeline()
-  p.hincrby(`c:visit:${day}`, source, 1)
-  p.expire(`c:visit:${day}`, KEEP_SECONDS)
-  await p.exec()
+  await redis.hincrby(`c:visit:${dayKey()}`, source, 1)
 }
 
 /** Count a tap on a Kakobuy sign-up link, by where on the site it was. */
@@ -77,10 +72,7 @@ export async function recordSignup(place: string, ip: string, ua: string): Promi
   const day = dayKey()
   const seen = await redis.set(`c:seen:${day}:${visitorHash(ip, ua, `signup:${place}`)}`, 1, { nx: true, ex: SEEN_SECONDS })
   if (seen !== 'OK') return
-  const p = redis.pipeline()
-  p.hincrby(`c:signup:${day}`, place, 1)
-  p.expire(`c:signup:${day}`, KEEP_SECONDS)
-  await p.exec()
+  await redis.hincrby(`c:signup:${day}`, place, 1)
 }
 
 /** Most-tapped items over the given days: [{ key, n }] best first. */
@@ -132,6 +124,17 @@ export async function topItemsCached(days: string[], limit = 60): Promise<{ key:
     .map(([key, n]) => ({ key, n }))
     .sort((a, b) => b.n - a.n || a.key.localeCompare(b.key))
     .slice(0, limit)
+}
+
+/**
+ * Delete the day counters that are past KEEP_DAYS: the 21 days before the
+ * cut-off, so a missed week or two is still caught up. One DEL command.
+ */
+export async function cleanupOldDays(from: Date = new Date()): Promise<number> {
+  if (!redis) return 0
+  const days = daysEnding(dayKey(from), KEEP_DAYS + 21).slice(KEEP_DAYS)
+  const keys = days.flatMap((d) => [`c:buy:${d}`, `c:visit:${d}`, `c:signup:${d}`, `c:stat:${d}`])
+  return redis.del(...keys)
 }
 
 /** Run once per `id` (e.g. the weekly Discord post). False if it already ran. */

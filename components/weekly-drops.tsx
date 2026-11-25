@@ -29,10 +29,14 @@ export function WeeklyDrops({ data, rates }: { data: WeekData; rates: FxRates | 
 
   const range = useMemo(() => {
     const fmt = new Intl.DateTimeFormat(localeFor(lang), { day: 'numeric', month: 'short', timeZone: 'UTC' })
+    // Node and browsers don't agree on the spaces around the dash (thin vs
+    // normal), which made the server HTML and the browser disagree (React
+    // hydration error #418): always use plain spaces.
+    const plain = (text: string) => text.replace(/[\u2009\u202f\u00a0]/g, ' ')
     try {
-      return fmt.formatRange(dayDate(week.start), dayDate(week.end))
+      return plain(fmt.formatRange(dayDate(week.start), dayDate(week.end)))
     } catch {
-      return `${fmt.format(dayDate(week.start))} – ${fmt.format(dayDate(week.end))}`
+      return plain(`${fmt.format(dayDate(week.start))} – ${fmt.format(dayDate(week.end))}`)
     }
   }, [lang, week.start, week.end])
 

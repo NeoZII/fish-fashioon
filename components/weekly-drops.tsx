@@ -47,7 +47,7 @@ export function WeeklyDrops({ data, rates }: { data: WeekData; rates: FxRates | 
   return (
     <ViewShell title={t.week.title(week.week)} accent="primary" onBack={goBack}>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">{t.week.lead(items.length, range)}</p>
+        <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">{t.week.lead(items.length, range).replace(/\.\.$/, '.') /* "16–22 nov." + "." */}</p>
         <div className="flex gap-3">
           <Link href={`/week/${prevId}`} className={nav} style={{ transform: 'skewX(-8deg)' }}>
             <ArrowLeft className="size-4" aria-hidden />

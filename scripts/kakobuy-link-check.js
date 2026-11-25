@@ -13,7 +13,7 @@
  *   1. Log in to Kakobuy, then open https://item2.kakobuy.com/ in that browser.
  *   2. Run this whole file in that tab's console.
  *   3. Start:   await window.fsLinkCheck.start()
- *      (options: { limit: 50 } to test on 50 links, { concurrency: 6 },
+ *      (options: { limit: 50 } to test on 50 links, { concurrency: 3 },
  *       { items: [...] } to check a given list instead of the catalogue)
  *   4. Watch:   window.fsLinkCheck.progress()
  *   5. Result:  window.fsLinkCheck.report()  (also saved in localStorage
@@ -21,6 +21,14 @@
  *
  * A link only counts as dead if Kakobuy says "This product may not exist" on
  * three separate checks (Kakobuy is flaky: a single miss means nothing).
+ *
+ * Kakobuy also rate-limits: after a few hundred pages in a few minutes it says
+ * "may not exist" for EVERY item for a while. So the check goes at a steady
+ * pace (3 pages at a time, a short gap between pages) and keeps re-checking a
+ * "canary" item it saw alive at the start. When the canary suddenly looks
+ * dead, the last batch is thrown away, the check pauses (10, 20, then 30 min)
+ * and redoes that batch. If Kakobuy is still blocking after that, it stops
+ * with an error instead of reporting hundreds of false dead links.
  */
 ;(() => {
   const CATALOGUE_URL = 'https://v0-fashionsea.vercel.app/api/catalogue'
@@ -28,6 +36,9 @@
   const ITEM_PAGE = 'https://item2.kakobuy.com/item/details?url='
   const PAGE_TIMEOUT = 30000
   const RECHECK_PAUSE = 20000
+  const PAGE_GAP = 1200 // between two pages in the same lane
+  const BATCH = 30 // re-check the canary after this many pages
+  const BACKOFF_MS = [10, 20, 30].map((m) => m * 60000)
   const REPORT_KEY = 'fs-linkcheck-report'
   // If more than this share of links looks dead on the first pass, something
   // else is wrong (logged out, Kakobuy down): stop instead of reporting.
@@ -125,9 +136,74 @@
         const i = next++
         const out = await work(list[i])
         onEach(list[i], out)
+        await sleep(PAGE_GAP)
       }
     })
     await Promise.all(runners)
+  }
+
+  // ---- rate-limit guard: a known-alive "canary" item ----------------------
+  async function canaryAlive() {
+    if (!state.canary) return true
+    for (let i = 0; i < 2; i++) {
+      const { verdict } = await probe(state.canary.url)
+      if (verdict === 'alive') return true
+    }
+    return false
+  }
+
+  /** First of the first 15 links that Kakobuy shows alive, or an error. */
+  async function pickCanary(checkable) {
+    for (const t of checkable.slice(0, 15)) {
+      if (state.stopRequested) return
+      const { verdict } = await probe(t.url)
+      if (verdict === 'alive') {
+        state.canary = { url: t.url, title: t.items[0] && t.items[0].title }
+        return
+      }
+    }
+    throw new Error(
+      'None of the first 15 links loaded as alive on Kakobuy, so Kakobuy is blocking the check right now (too many pages recently) or this browser is logged out. Nothing was reported. Try again later.',
+    )
+  }
+
+  /**
+   * Check `list` in batches; after each batch the canary must still be alive,
+   * otherwise that batch's verdicts are dropped and it is redone after a pause.
+   */
+  async function guardedRun(list, conc) {
+    state.pass += 1
+    state.done = 0
+    state.total = list.length
+    for (let start = 0; start < list.length && !state.stopRequested; ) {
+      const batch = list.slice(start, start + BATCH)
+      const added = []
+      await pool(batch, conc, (t) => probe(t.url), (t, out) => {
+        t.checks.push(out.verdict)
+        added.push(t)
+      })
+      if (await canaryAlive()) {
+        state.done += batch.length
+        start += BATCH
+        state.blockedPauses = 0
+        continue
+      }
+      // Kakobuy is rate-limiting: these verdicts can't be trusted.
+      for (const t of added) t.checks.pop()
+      const wait = BACKOFF_MS[state.blockedPauses || 0]
+      if (wait === undefined) {
+        throw new Error(
+          `Kakobuy kept blocking the check (its canary item "${state.canary.title}" showed as missing for over an hour) after ${state.done} links of pass ${state.pass}. Nothing was reported. Try again later.`,
+        )
+      }
+      state.blockedPauses = (state.blockedPauses || 0) + 1
+      state.totalPauses = (state.totalPauses || 0) + 1
+      state.status = 'paused'
+      state.resumeAt = Date.now() + wait
+      await sleep(wait)
+      state.status = 'running'
+      state.resumeAt = null
+    }
   }
 
   // ---- state --------------------------------------------------------------
@@ -144,12 +220,32 @@
     result: null,
   }
 
+  // The download from a Kakobuy tab sometimes fails once or twice in a row
+  // ("Failed to fetch"), which used to end the whole weekly run. Retry for
+  // about two minutes before giving up.
+  const CATALOGUE_RETRIES_MS = [0, 5000, 15000, 30000, 60000]
+
   async function loadCatalogue() {
-    const res = await fetch(CATALOGUE_URL, { cache: 'no-store' })
-    if (!res.ok) throw new Error(`Catalogue answered ${res.status}`)
-    const items = await res.json()
-    if (!Array.isArray(items) || !items.length) throw new Error('Catalogue is empty')
-    return items
+    let lastError = null
+    for (let i = 0; i < CATALOGUE_RETRIES_MS.length; i++) {
+      if (CATALOGUE_RETRIES_MS[i]) await sleep(CATALOGUE_RETRIES_MS[i])
+      try {
+        // Alternate between a fresh copy and the normal (edge-cached) one.
+        const res = await fetch(CATALOGUE_URL, i % 2 ? {} : { cache: 'no-store' })
+        if (!res.ok) throw new Error(`Catalogue answered ${res.status}`)
+        const items = await res.json()
+        if (!Array.isArray(items) || !items.length) throw new Error('Catalogue is empty')
+        state.catalogueTries = i + 1
+        return items
+      } catch (err) {
+        lastError = err
+      }
+    }
+    throw new Error(
+      `Could not download the catalogue from ${CATALOGUE_URL} after ${CATALOGUE_RETRIES_MS.length} tries (${
+        lastError && lastError.message ? lastError.message : lastError
+      }).`,
+    )
   }
 
   function slugify(title) {
@@ -197,9 +293,9 @@
   }
 
   async function start(options = {}) {
-    if (state.status === 'running') return 'already running'
-    const concurrency = options.concurrency || 6
-    Object.assign(state, { status: 'running', pass: 0, done: 0, total: 0, startedAt: Date.now(), finishedAt: null, error: null, stopRequested: false, result: null })
+    if (state.status === 'running' || state.status === 'paused') return 'already running'
+    const concurrency = options.concurrency || 3
+    Object.assign(state, { status: 'running', pass: 0, done: 0, total: 0, startedAt: Date.now(), finishedAt: null, error: null, stopRequested: false, result: null, canary: null, blockedPauses: 0, totalPauses: 0, resumeAt: null })
     try {
       // options.items: check a given list instead of the live catalogue (tests).
       let items = Array.isArray(options.items) ? options.items : await loadCatalogue()
@@ -221,18 +317,11 @@
       state.targets = [...byUrl.values()]
       for (const e of unsupported) state.targets.push({ url: null, items: [e], checks: ['unsupported'], unsupported: true })
 
-      const run = async (list, conc) => {
-        state.pass += 1
-        state.done = 0
-        state.total = list.length
-        await pool(list, conc, (t) => probe(t.url), (t, out) => {
-          t.checks.push(out.verdict)
-          state.done += 1
-        })
-      }
+      const run = (list, conc) => guardedRun(list, conc)
 
-      // Pass 1: everything.
+      // Pass 1: everything (after finding a canary that loads as alive).
       const checkable = state.targets.filter((t) => t.url)
+      await pickCanary(checkable)
       await run(checkable, concurrency)
       const firstDead = checkable.filter((t) => t.checks[0] === 'dead').length
       if (checkable.length >= 50 && firstDead / checkable.length > MAX_DEAD_SHARE) {
@@ -246,7 +335,7 @@
         const again = checkable.filter((t) => !t.checks.includes('alive'))
         if (!again.length) break
         await sleep(RECHECK_PAUSE)
-        await run(again, Math.max(2, Math.floor(concurrency / 2)))
+        await run(again, Math.max(1, Math.floor(concurrency / 2)))
       }
       // Links still without 3 verdicts (e.g. timeouts) get one more try each.
       const short = checkable.filter((t) => !t.checks.includes('alive') && t.checks.length < 3)
@@ -277,6 +366,10 @@
       total: state.total,
       minutes: mins,
       error: state.error,
+      catalogueTries: state.catalogueTries || 0,
+      canary: state.canary ? state.canary.title : null,
+      pausesForBlocking: state.totalPauses || 0,
+      resumeAt: state.resumeAt ? new Date(state.resumeAt).toISOString() : null,
       deadSoFar: state.targets.filter((t) => t.checks.length && t.checks.every((x) => x === 'dead')).length,
     }
   }

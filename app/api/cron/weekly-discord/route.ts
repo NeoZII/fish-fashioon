@@ -1,5 +1,5 @@
 import { SIGNUP_URL } from '@/lib/buy-gate-url'
-import { claimOnce, releaseOnce } from '@/lib/clicks'
+import { claimOnce, cleanupOldDays, releaseOnce } from '@/lib/clicks'
 import type { Product } from '@/lib/data'
 import { itemPath } from '@/lib/item-key'
 import { parsePrice } from '@/lib/price'
@@ -115,6 +115,10 @@ export async function GET(req: Request) {
   if (!(await claimOnce(claimId, 10 * 24 * 3600))) {
     return Response.json({ ok: false, reason: 'already posted this week (or the database is not connected)' })
   }
+
+  // Weekly housekeeping, once per week (after the claim, so calling this URL
+  // repeatedly can't spend database commands): drop counters older than 60 days.
+  await cleanupOldDays().catch((err) => console.log('[weekly-discord] cleanup failed:', err))
 
   try {
     // Build the share image first so Discord finds it ready.

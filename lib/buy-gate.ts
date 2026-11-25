@@ -32,9 +32,29 @@ export function rememberKakobuyAnswer(answer: 'has-account' | 'new') {
   }
 }
 
+const TAPS_KEY = 'fs:taps'
+
+/**
+ * True the first time this browser taps BUY on an item today. The server only
+ * counts one tap per person, item and day anyway, so repeats aren't sent
+ * (saves a database command each).
+ */
+function firstTapToday(key: string): boolean {
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const saved = JSON.parse(window.localStorage.getItem(TAPS_KEY) || 'null') as { day?: string; keys?: string[] } | null
+    const keys = saved && saved.day === today && Array.isArray(saved.keys) ? saved.keys : []
+    if (keys.includes(key)) return false
+    window.localStorage.setItem(TAPS_KEY, JSON.stringify({ day: today, keys: [...keys, key].slice(-200) }))
+    return true
+  } catch {
+    return true // storage blocked: let the server dedupe
+  }
+}
+
 /** onClick for every BUY link: counts the tap, shows the first-time step once. */
 export function onBuyClick(e: MouseEvent<HTMLAnchorElement>, item: GateItem) {
-  track({ t: 'buy', k: item.key })
+  if (firstTapToday(item.key)) track({ t: 'buy', k: item.key })
   if (!item.link || answered()) return
   // Let ctrl/cmd-click etc. behave normally.
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return

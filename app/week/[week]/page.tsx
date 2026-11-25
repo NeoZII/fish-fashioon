@@ -3,7 +3,8 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { WeeklyDrops } from '@/components/weekly-drops'
 import { getRates } from '@/lib/fx'
 import { getWeekData } from '@/lib/week-lookup'
-import { SITE_NAME } from '@/lib/site'
+import { SITE_NAME, SITE_URL } from '@/lib/site'
+import { itemListLd, jsonLd } from '@/lib/structured-data'
 
 // One page per week (/week/2026-w46): built on first visit, refreshed every
 // 5 minutes like the rest of the catalogue.
@@ -43,5 +44,11 @@ export default async function WeekPage({ params }: Props) {
   if (!data) notFound()
   // Same week, other spelling (e.g. 2026-W46): send to the canonical URL.
   if (decodeURIComponent(id) !== data.week.id) permanentRedirect(`/week/${data.week.id}`)
-  return <WeeklyDrops data={data} rates={rates} />
+  const ld = itemListLd(`Week ${data.week.week} ${data.week.year} drops`, `${SITE_URL}/week/${data.week.id}`, data.items)
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
+      <WeeklyDrops data={data} rates={rates} />
+    </>
+  )
 }

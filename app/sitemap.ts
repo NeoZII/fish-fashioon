@@ -3,6 +3,7 @@ import { getCatalogue } from '@/lib/catalogue'
 import { itemPath } from '@/lib/item-key'
 import { PRIVATE_PATHS, VIEW_PATHS } from '@/lib/sections'
 import { SITE_URL } from '@/lib/site'
+import { addedInWeek, currentWeek, shiftWeek } from '@/lib/weeks'
 
 // Rebuilt hourly so new finds become discoverable by search engines.
 export const revalidate = 3600
@@ -17,8 +18,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   let items: MetadataRoute.Sitemap = []
+  const weeks: MetadataRoute.Sitemap = []
   try {
     const catalogue = await getCatalogue()
+    // The last 12 weekly pages that have at least one drop.
+    const now = currentWeek()
+    for (let i = 0; i < 12; i++) {
+      const w = shiftWeek(now, -i)
+      if (!catalogue.some((p) => addedInWeek(p.date_added, w))) continue
+      weeks.push({ url: `${SITE_URL}/week/${w.id}`, changeFrequency: i === 0 ? 'daily' : 'weekly', priority: 0.7 })
+    }
     const seen = new Set<string>()
     items = catalogue
       .filter((p) => (seen.has(p.key) ? false : (seen.add(p.key), true)))
@@ -35,5 +44,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Sheet unavailable: still serve the section URLs.
   }
 
-  return [...sections, ...items]
+  return [...sections, ...weeks, ...items]
 }

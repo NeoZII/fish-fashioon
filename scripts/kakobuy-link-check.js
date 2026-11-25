@@ -144,12 +144,32 @@
     result: null,
   }
 
+  // The download from a Kakobuy tab sometimes fails once or twice in a row
+  // ("Failed to fetch"), which used to end the whole weekly run. Retry for
+  // about two minutes before giving up.
+  const CATALOGUE_RETRIES_MS = [0, 5000, 15000, 30000, 60000]
+
   async function loadCatalogue() {
-    const res = await fetch(CATALOGUE_URL, { cache: 'no-store' })
-    if (!res.ok) throw new Error(`Catalogue answered ${res.status}`)
-    const items = await res.json()
-    if (!Array.isArray(items) || !items.length) throw new Error('Catalogue is empty')
-    return items
+    let lastError = null
+    for (let i = 0; i < CATALOGUE_RETRIES_MS.length; i++) {
+      if (CATALOGUE_RETRIES_MS[i]) await sleep(CATALOGUE_RETRIES_MS[i])
+      try {
+        // Alternate between a fresh copy and the normal (edge-cached) one.
+        const res = await fetch(CATALOGUE_URL, i % 2 ? {} : { cache: 'no-store' })
+        if (!res.ok) throw new Error(`Catalogue answered ${res.status}`)
+        const items = await res.json()
+        if (!Array.isArray(items) || !items.length) throw new Error('Catalogue is empty')
+        state.catalogueTries = i + 1
+        return items
+      } catch (err) {
+        lastError = err
+      }
+    }
+    throw new Error(
+      `Could not download the catalogue from ${CATALOGUE_URL} after ${CATALOGUE_RETRIES_MS.length} tries (${
+        lastError && lastError.message ? lastError.message : lastError
+      }).`,
+    )
   }
 
   function slugify(title) {
@@ -277,6 +297,7 @@
       total: state.total,
       minutes: mins,
       error: state.error,
+      catalogueTries: state.catalogueTries || 0,
       deadSoFar: state.targets.filter((t) => t.checks.length && t.checks.every((x) => x === 'dead')).length,
     }
   }

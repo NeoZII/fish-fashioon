@@ -1,3 +1,5 @@
+import { gunzipSync, gzipSync } from 'node:zlib'
+import { unstable_cache } from 'next/cache'
 import { type Product } from './data'
 import { cleanCatalogue } from './clean-catalogue'
 
@@ -25,22 +27,11 @@ let lastGood: Product[] = []
 /** Coerce the raw sheet rows into clean, typed products (see clean-catalogue.ts). */
 export const normalizeCatalogue = cleanCatalogue
 
-/**
- * Fetch + normalize the catalogue from the (slow, occasionally flaky) upstream.
- *
- * `cached` reads through the Next.js Data Cache so the expensive Apps Script
- * call runs at most once per revalidation window across all visitors. The Apps
- * Script `/exec` endpoint 302-redirects to googleusercontent.com, so we follow
- * redirects explicitly. `timeoutMs` bounds how long we are willing to block a
- * request waiting on the upstream. Any successful, non-empty result is stashed
- * as the durable last-known-good copy.
- */
-async function fetchCatalogue(cached: boolean, timeoutMs: number): Promise<Product[]> {
+/** One request to the sheet, never cached by Next.js itself (see below). */
+async function fetchSheet(timeoutMs: number): Promise<Product[]> {
   const res = await fetch(SHEET_ENDPOINT, {
     redirect: 'follow',
-    ...(cached
-      ? { next: { revalidate: CATALOGUE_REVALIDATE } }
-      : { cache: 'no-store' }),
+    cache: 'no-store',
     signal: AbortSignal.timeout(timeoutMs),
   })
   if (!res.ok) throw new Error(`Sheet responded ${res.status}`)
@@ -50,8 +41,38 @@ async function fetchCatalogue(cached: boolean, timeoutMs: number): Promise<Produ
 }
 
 /**
+ * The shared, cached copy: the cleaned catalogue, gzipped and base64-encoded.
+ *
+ * Why packed: Next.js refuses to cache anything over 2 MB, and it stores a
+ * fetched response base64-encoded (+33%). Once the sheet passed ~1.57 MB
+ * (3,857 items, 25 Nov 2026) the raw response no longer fit, so the cache kept
+ * serving the old copy forever while every visit re-downloaded the sheet.
+ * Packed, ~1.6 MB of JSON is ~300 KB, which leaves room for 15,000+ items.
+ *
+ * Refreshed in the background every CATALOGUE_REVALIDATE seconds; if a
+ * refresh fails (throws), the previous copy keeps being served.
+ */
+const packedCatalogue = unstable_cache(
+  async (): Promise<string> => {
+    const items = await fetchSheet(25000)
+    // Never cache an empty catalogue: throwing keeps the previous copy.
+    if (!items.length) throw new Error('Sheet returned no items')
+    return gzipSync(JSON.stringify(items)).toString('base64')
+  },
+  ['sheet-catalogue-gzip-v1'],
+  { revalidate: CATALOGUE_REVALIDATE },
+)
+
+async function cachedCatalogue(): Promise<Product[]> {
+  const packed = await packedCatalogue()
+  const items = JSON.parse(gunzipSync(Buffer.from(packed, 'base64')).toString('utf8')) as Product[]
+  if (items.length) lastGood = items
+  return items
+}
+
+/**
  * Resilient catalogue read. Order of preference:
- *   1. Next.js Data-Cached copy (fast, shared, refreshed every 5 min).
+ *   1. The shared cached copy (packed, refreshed every 5 min in the background).
  *   2. A fresh uncached retry if the cached copy is empty/errored.
  *   3. The durable in-memory last-known-good copy from an earlier success.
  * Only returns [] if the sheet has NEVER been fetched successfully on this
@@ -62,7 +83,7 @@ export async function getCatalogue(): Promise<Product[]> {
   // Happy path: served from the Data Cache, so this is cheap on warm caches.
   // Keep the blocking window short so a hung upstream can't stall the render.
   try {
-    const items = await fetchCatalogue(true, 8000)
+    const items = await cachedCatalogue()
     if (items.length) return items
     console.log('[v0] getCatalogue: cached copy empty, retrying fresh')
   } catch (err) {
@@ -72,7 +93,7 @@ export async function getCatalogue(): Promise<Product[]> {
   // The cached read gave nothing. Try one fresh request, but only fall back to
   // last-known-good rather than blocking the visitor for the full upstream time.
   try {
-    const fresh = await fetchCatalogue(false, 12000)
+    const fresh = await fetchSheet(12000)
     if (fresh.length) return fresh
   } catch (retryErr) {
     console.log('[v0] getCatalogue fresh retry failed:', retryErr)
